@@ -1,0 +1,26 @@
+# This is a generated file; do not edit or check into version control.
+firebase_analytics=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_analytics-10.1.3/
+firebase_analytics_web=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_analytics_web-0.5.1+11/
+firebase_auth=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_auth-4.2.8/
+firebase_auth_web=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_auth_web-5.2.7/
+firebase_core=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_core-2.6.1/
+firebase_core_web=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_core_web-2.2.1/
+firebase_storage=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_storage-11.0.13/
+firebase_storage_web=/Users/stefannovak/.pub-cache/hosted/pub.dev/firebase_storage_web-3.3.22/
+flutter_plugin_android_lifecycle=/Users/stefannovak/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.7/
+flutter_secure_storage=/Users/stefannovak/.pub-cache/hosted/pub.dev/flutter_secure_storage-7.0.1/
+flutter_secure_storage_linux=/Users/stefannovak/.pub-cache/hosted/pub.dev/flutter_secure_storage_linux-1.1.3/
+flutter_secure_storage_macos=/Users/stefannovak/.pub-cache/hosted/pub.dev/flutter_secure_storage_macos-2.0.1/
+flutter_secure_storage_web=/Users/stefannovak/.pub-cache/hosted/pub.dev/flutter_secure_storage_web-1.1.1/
+flutter_secure_storage_windows=/Users/stefannovak/.pub-cache/hosted/pub.dev/flutter_secure_storage_windows-1.1.3/
+geolocator=/Users/stefannovak/.pub-cache/hosted/pub.dev/geolocator-9.0.2/
+geolocator_android=/Users/stefannovak/.pub-cache/hosted/pub.dev/geolocator_android-4.1.7/
+geolocator_apple=/Users/stefannovak/.pub-cache/hosted/pub.dev/geolocator_apple-2.2.5/
+geolocator_web=/Users/stefannovak/.pub-cache/hosted/pub.dev/geolocator_web-2.1.6/
+geolocator_windows=/Users/stefannovak/.pub-cache/hosted/pub.dev/geolocator_windows-0.1.1/
+google_maps_flutter=/Users/stefannovak/.pub-cache/hosted/pub.dev/google_maps_flutter-2.2.3/
+google_maps_flutter_android=/Users/stefannovak/.pub-cache/hosted/pub.dev/google_maps_flutter_android-2.4.5/
+google_maps_flutter_ios=/Users/stefannovak/.pub-cache/hosted/pub.dev/google_maps_flutter_ios-2.1.13/
+webview_flutter=/Users/stefannovak/.pub-cache/hosted/pub.dev/webview_flutter-3.0.4/
+webview_flutter_android=/Users/stefannovak/.pub-cache/hosted/pub.dev/webview_flutter_android-2.10.4/
+webview_flutter_wkwebview=/Users/stefannovak/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-2.9.5/
