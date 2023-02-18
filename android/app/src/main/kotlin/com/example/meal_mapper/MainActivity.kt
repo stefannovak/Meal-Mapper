@@ -1,4 +1,4 @@
-package com.stefannovak.meal_mapper
+package com.stefannovak.mealmapper
 
 import io.flutter.embedding.android.FlutterActivity
 
