@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "499131374995",
+    "project_id": "meal-mapper",
+    "storage_bucket": "meal-mapper.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499131374995:android:303a34b119fbbf8bd01c66",
+        "android_client_info": {
+          "package_name": "com.stefannovak.meal_mapper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "499131374995-fjt83karfuid1dtgl6g4l87evipd82ma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVRwCj_yKFGbBvMeGxL0z5-r73fx2qu4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "499131374995-fjt83karfuid1dtgl6g4l87evipd82ma.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "499131374995-g6fk6qk04qqoqskqd1c99r0mqbon3jbi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.stefannovak.mealmapper"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499131374995:android:e1d3b9f7a9431f8bd01c66",
+        "android_client_info": {
+          "package_name": "com.stefannovak.mealmapper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "499131374995-fjt83karfuid1dtgl6g4l87evipd82ma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVRwCj_yKFGbBvMeGxL0z5-r73fx2qu4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "499131374995-fjt83karfuid1dtgl6g4l87evipd82ma.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "499131374995-g6fk6qk04qqoqskqd1c99r0mqbon3jbi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.stefannovak.mealmapper"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
