@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.stefannovak.meal_mapper">
+    package="com.stefannovak.mealmapper">
    <application
-        android:label="meal_mapper"
+        android:label="mealmapper"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

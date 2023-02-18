@@ -1,6 +1,6 @@
 {
-    "name": "meal_mapper",
-    "short_name": "meal_mapper",
+    "name": "mealmapper",
+    "short_name": "mealmapper",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
