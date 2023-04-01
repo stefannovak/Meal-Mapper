@@ -21,6 +21,3 @@ geolocator_windows=/Users/stefannovak/.pub-cache/hosted/pub.dev/geolocator_windo
 google_maps_flutter=/Users/stefannovak/.pub-cache/hosted/pub.dev/google_maps_flutter-2.2.3/
 google_maps_flutter_android=/Users/stefannovak/.pub-cache/hosted/pub.dev/google_maps_flutter_android-2.4.5/
 google_maps_flutter_ios=/Users/stefannovak/.pub-cache/hosted/pub.dev/google_maps_flutter_ios-2.1.13/
-webview_flutter=/Users/stefannovak/.pub-cache/hosted/pub.dev/webview_flutter-3.0.4/
-webview_flutter_android=/Users/stefannovak/.pub-cache/hosted/pub.dev/webview_flutter_android-2.10.4/
-webview_flutter_wkwebview=/Users/stefannovak/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-2.9.5/
