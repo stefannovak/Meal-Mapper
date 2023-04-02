@@ -10,12 +10,19 @@ class ApiService {
 
   ApiService(this._client);
 
+  /// Radius is in meters.
   Future<Result<NearbySearchResponse, String>> getGoogleNearbySearch(
     double latitude,
-    double longitude,
-  ) async {
-    var response = await _client.get(Uri.parse(
-        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude%2C$longitude&radius=1&key=$_googleApiKey"));
+    double longitude, {
+    int? radius = 10,
+  }) async {
+    var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
+        "location=$latitude%2C$longitude" +
+        "&radius=$radius" +
+        "&type=restaurant|bar" +
+        "&key=$_googleApiKey";
+
+    var response = await _client.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       print(jsonDecode(response.body) as Map<String, dynamic>);

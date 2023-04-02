@@ -70,10 +70,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  GoogleMapController? _controller;
 
   Set<Marker> markers = HashSet<Marker>();
+
+  @override
+  void initState() {
+    super.initState();
+    BlocProvider.of<MapBloc>(context).add(const GetCurrentLocation());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,88 +89,41 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       },
       builder: (context, state) {
-        return Scaffold(
-          body: FutureBuilder(
-            future: _determinePosition(),
-            builder: (context, snapshot) {
-              if (snapshot.data?.latitude != null &&
-                  snapshot.data?.longitude != null) {
-                return GoogleMap(
-                  mapType: MapType.hybrid,
-                  myLocationEnabled: true,
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(
-                        snapshot.data!.latitude, snapshot.data!.longitude),
-                    zoom: 10,
-                  ),
-                  onMapCreated: (controller) {
-                    _controller.complete(controller);
-                  },
-                  markers: markers,
-                  onTap: (loc) async {
-                    print(loc.latitude);
-                    print(loc.longitude);
-                    BlocProvider.of<MapBloc>(context)
-                        .add(UserClickedMap(loc.latitude, loc.longitude));
-                  },
-                  onLongPress: (loc) {
-                    var marker = Marker(
-                      markerId: MarkerId(loc.latitude.toString()),
-                      position: LatLng(loc.latitude, loc.longitude),
-                      infoWindow: InfoWindow(title: "test"),
-                    );
-                    setState(() {
-                      markers.add(marker);
-                    });
-                  },
-                );
-              }
-              return const CircularProgressIndicator();
-            },
-          ),
-        );
+        if (state is FetchedLocation) {
+          return Scaffold(
+            body: SafeArea(
+              child: GoogleMap(
+                mapType: MapType.hybrid,
+                myLocationEnabled: true,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(state.latitude, state.longitude),
+                  zoom: 16,
+                ),
+                onMapCreated: (controller) {
+                  _controller = controller;
+                },
+                markers: markers,
+                onTap: (loc) async {
+                  BlocProvider.of<MapBloc>(context)
+                      .add(UserClickedMap(loc.latitude, loc.longitude));
+                },
+                onLongPress: (loc) {
+                  var marker = Marker(
+                    markerId: MarkerId(loc.latitude.toString()),
+                    position: LatLng(loc.latitude, loc.longitude),
+                    infoWindow: InfoWindow(title: "test"),
+                  );
+                  setState(() {
+                    markers.add(marker);
+                  });
+                },
+              ),
+            ),
+          );
+        }
+
+        return const Center(child: CircularProgressIndicator());
       },
     );
-  }
-
-  /// Determine the current position of the device.
-  ///
-  /// When the location services are not enabled or permissions
-  /// are denied the `Future` will return an error.
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
   }
 }
