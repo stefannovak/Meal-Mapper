@@ -25,10 +25,9 @@ class ApiService {
     var response = await _client.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      print(jsonDecode(response.body) as Map<String, dynamic>);
-      return Result(success: NearbySearchResponse());
-    } else if (response.statusCode == 204) {
-      return Result(failure: "Oops");
+      var nearbySearchResponse = NearbySearchResponse.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
+      return Result(success: nearbySearchResponse);
     }
     return Result(failure: "Crap");
   }

@@ -9,6 +9,7 @@ import 'package:http/http.dart';
 import 'package:mealmapper/bloc/bloc/map_bloc.dart';
 import 'package:mealmapper/firebase_options.dart';
 import 'package:mealmapper/services/api_service.dart';
+import 'package:mealmapper/services/home_page.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -58,72 +59,6 @@ class _MyAppState extends State<MyApp> {
         ),
         home: const MyHomePage(),
       ),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  GoogleMapController? _controller;
-
-  Set<Marker> markers = HashSet<Marker>();
-
-  @override
-  void initState() {
-    super.initState();
-    BlocProvider.of<MapBloc>(context).add(const GetCurrentLocation());
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<MapBloc, MapState>(
-      listener: (context, state) {
-        if (state is FetchedPlaceDetails) {
-          print("Fetched");
-        }
-      },
-      builder: (context, state) {
-        if (state is FetchedLocation) {
-          return Scaffold(
-            body: SafeArea(
-              child: GoogleMap(
-                mapType: MapType.hybrid,
-                myLocationEnabled: true,
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(state.latitude, state.longitude),
-                  zoom: 16,
-                ),
-                onMapCreated: (controller) {
-                  _controller = controller;
-                },
-                markers: markers,
-                onTap: (loc) async {
-                  BlocProvider.of<MapBloc>(context)
-                      .add(UserClickedMap(loc.latitude, loc.longitude));
-                },
-                onLongPress: (loc) {
-                  var marker = Marker(
-                    markerId: MarkerId(loc.latitude.toString()),
-                    position: LatLng(loc.latitude, loc.longitude),
-                    infoWindow: InfoWindow(title: "test"),
-                  );
-                  setState(() {
-                    markers.add(marker);
-                  });
-                },
-              ),
-            ),
-          );
-        }
-
-        return const Center(child: CircularProgressIndicator());
-      },
     );
   }
 }

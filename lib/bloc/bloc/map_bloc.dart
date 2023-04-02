@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/services/api_service.dart';
 
 part 'map_event.dart';
@@ -56,6 +57,15 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     // continue accessing the position of the device.
     var position = await Geolocator.getCurrentPosition();
     emit(FetchedLocation(position.latitude, position.longitude));
+    var response = await _apiService.getGoogleNearbySearch(
+      position.latitude,
+      position.longitude,
+      radius: 500,
+    );
+
+    if (response.isSuccess && response.success != null) {
+      emit(FetchedNearbyArea(response.success!));
+    }
   }
 
   Future<void> _onUserClickedMap(
@@ -67,8 +77,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       event._longitude,
     );
 
-    if (response.isSuccess) {
-      emit(FetchedPlaceDetails());
+    if (response.isSuccess && response.success != null) {
+      emit(FetchedNearbyArea(response.success!));
     }
   }
 
@@ -79,11 +89,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     final response = await _apiService.getGoogleNearbySearch(
       event._latitude,
       event._longitude,
-      radius: 500,
+      radius: 800,
     );
 
-    if (response.isSuccess) {
-      emit(FetchedPlaceDetails());
+    if (response.isSuccess && response.success != null) {
+      emit(FetchedNearbyArea(response.success!));
     }
   }
 }
