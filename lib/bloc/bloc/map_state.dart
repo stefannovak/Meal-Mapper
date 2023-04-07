@@ -42,3 +42,12 @@ class FetchedNearbyArea extends MapInitial {
   @override
   List<Object> get props => [];
 }
+
+class FetchedPlaceDetails extends MapInitial {
+  late PlaceDetailsResponse response;
+
+  FetchedPlaceDetails(this.response);
+
+  @override
+  List<Object> get props => [];
+}

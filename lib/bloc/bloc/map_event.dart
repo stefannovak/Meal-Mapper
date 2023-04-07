@@ -33,3 +33,11 @@ class GetLocalPlaces extends MapEvent {
     _longitude = longitude;
   }
 }
+
+class FetchPlaceDetails extends MapEvent {
+  late String _placeId;
+
+  FetchPlaceDetails(placeId) {
+    _placeId = placeId;
+  }
+}

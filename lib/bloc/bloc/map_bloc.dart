@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
+import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/services/api_service.dart';
 
 part 'map_event.dart';
@@ -16,6 +17,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<GetCurrentLocation>(_onGetCurrentLocation);
     on<UserClickedMap>(_onUserClickedMap);
     on<GetLocalPlaces>(_onGetLocalPlaces);
+    on<FetchPlaceDetails>(_onFetchPlaceDetails);
   }
 
   Future<void> _onGetCurrentLocation(
@@ -89,11 +91,25 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     final response = await _apiService.getGoogleNearbySearch(
       event._latitude,
       event._longitude,
-      radius: 800,
+      // radius: 800,
+      radius: 100,
     );
 
     if (response.isSuccess && response.success != null) {
       emit(FetchedNearbyArea(response.success!));
+    }
+  }
+
+  Future<void> _onFetchPlaceDetails(
+    FetchPlaceDetails event,
+    Emitter<MapState> emit,
+  ) async {
+    final response = await _apiService.getPlaceDetails(
+      event._placeId,
+    );
+
+    if (response.isSuccess && response.success != null) {
+      emit(FetchedPlaceDetails(response.success!));
     }
   }
 }

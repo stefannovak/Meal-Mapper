@@ -1,14 +1,14 @@
 class NearbySearchResponse {
-  List<Results>? results;
+  List<NearbySearchResponseResult>? results;
   String? status;
 
   NearbySearchResponse({this.results, this.status});
 
   NearbySearchResponse.fromJson(Map<String, dynamic> json) {
     if (json['results'] != null) {
-      results = <Results>[];
+      results = <NearbySearchResponseResult>[];
       json['results'].forEach((v) {
-        results!.add(new Results.fromJson(v));
+        results!.add(new NearbySearchResponseResult.fromJson(v));
       });
     }
     status = json['status'];
@@ -24,7 +24,7 @@ class NearbySearchResponse {
   }
 }
 
-class Results {
+class NearbySearchResponseResult {
   late Geometry geometry;
   String? icon;
   String? iconBackgroundColor;
@@ -42,7 +42,7 @@ class Results {
   num? rating;
   int? userRatingsTotal;
 
-  Results(
+  NearbySearchResponseResult(
       {required this.geometry,
       this.icon,
       this.iconBackgroundColor,
@@ -60,7 +60,7 @@ class Results {
       this.rating,
       this.userRatingsTotal});
 
-  Results.fromJson(Map<String, dynamic> json) {
+  NearbySearchResponseResult.fromJson(Map<String, dynamic> json) {
     geometry = Geometry.fromJson(json['geometry']);
     icon = json['icon'];
     iconBackgroundColor = json['icon_background_color'];

@@ -1,15 +1,11 @@
-import 'dart:async';
-import 'dart:collection';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart';
 import 'package:mealmapper/bloc/bloc/map_bloc.dart';
 import 'package:mealmapper/firebase_options.dart';
 import 'package:mealmapper/services/api_service.dart';
-import 'package:mealmapper/services/home_page.dart';
+import 'package:mealmapper/screens/home_page.dart';
 
 void main() async {
   runApp(const MyApp());

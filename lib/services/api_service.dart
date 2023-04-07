@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
+import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/result.dart';
 
 class ApiService {
@@ -28,6 +29,23 @@ class ApiService {
       var nearbySearchResponse = NearbySearchResponse.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>);
       return Result(success: nearbySearchResponse);
+    }
+    return Result(failure: "Crap");
+  }
+
+  Future<Result<PlaceDetailsResponse, String>> getPlaceDetails(
+    String placeId,
+  ) async {
+    var url = "https://maps.googleapis.com/maps/api/place/details/json?" +
+        "place_id=$placeId" +
+        "&key=$_googleApiKey";
+
+    var response = await _client.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var placeDetailsResponse = PlaceDetailsResponse.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
+      return Result(success: placeDetailsResponse);
     }
     return Result(failure: "Crap");
   }
