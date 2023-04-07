@@ -15,8 +15,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController? _controller;
-  late double userLatitude;
-  late double userLongitude;
+  double? _userLatitude;
+  double? _userLongitude;
 
   Set<Marker> markers = HashSet<Marker>();
 
@@ -59,40 +59,56 @@ class _MyHomePageState extends State<MyHomePage> {
                     );
 
                     // ignore: use_build_context_synchronously
-                    showBottomSheet(
+                    var future = showModalBottomSheet(
                       backgroundColor: Colors.transparent,
                       context: context,
                       builder: (context) {
                         return DetailedBottomSheet(area: area);
                       },
                     );
+
+                    future.then(
+                      (value) async => await _controller?.animateCamera(
+                        CameraUpdate.newCameraPosition(
+                          CameraPosition(
+                            target: LatLng(
+                              area.geometry.location.lat,
+                              area.geometry.location.lng,
+                            ),
+                            zoom: await _controller?.getZoomLevel() ?? 16,
+                          ),
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
             );
 
-            return _buildMap();
+            return _buildMap(_userLatitude!, _userLongitude!);
           }
 
           if (state is FetchedLocation) {
-            userLatitude = state.latitude;
-            userLongitude = state.longitude;
-            return _buildMap();
+            _userLatitude = state.latitude;
+            _userLongitude = state.longitude;
+            return _buildMap(state.latitude, state.longitude);
           }
 
-          return const Center(child: CircularProgressIndicator());
+          return _userLatitude != null && _userLongitude != null
+              ? _buildMap(_userLatitude!, _userLongitude!)
+              : const Center(child: CircularProgressIndicator());
         },
       ),
     );
   }
 
-  Widget _buildMap() {
+  Widget _buildMap(double latitude, double longitude) {
     return SafeArea(
       child: GoogleMap(
         mapType: MapType.hybrid,
         myLocationEnabled: true,
         initialCameraPosition: CameraPosition(
-          target: LatLng(userLatitude, userLongitude),
+          target: LatLng(latitude, longitude),
           zoom: 16,
         ),
         onMapCreated: (controller) {
