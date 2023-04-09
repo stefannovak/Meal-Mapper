@@ -1,7 +1,11 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mealmapper/bloc/bloc/map_bloc.dart';
+import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
+import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
+import 'package:mealmapper/models/review.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DetailedBottomSheet extends StatefulWidget {
   final NearbySearchResponseResult area;
@@ -47,26 +51,86 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                   ),
                 ),
                 const SizedBox(
-                  height: 8 * 4,
+                  height: 8 * 1,
+                ),
+                Text(state.response.result?.formattedAddress ?? "address"),
+                const SizedBox(
+                  height: 8 * 2,
                 ),
                 Text(
-                  "General Rating: ${widget.area.rating}",
+                  "${widget.area.rating}/5",
                   style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w200,
+                  ),
+                ),
+                const SizedBox(
+                  height: 8 * 2,
+                ),
+                const Text(
+                  "My rating: ?/5",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w200,
                   ),
                 ),
                 const SizedBox(
                   height: 8 * 4,
                 ),
-                Text("Rate this place!"),
+                GestureDetector(
+                  onTap: () async {
+                    BlocProvider.of<FirebaseBloc>(context).add(
+                      UserSubmittedReview(
+                        Review(
+                          5,
+                          "Amazing place!",
+                          widget.area.placeId,
+                          widget.area.geometry.location.lat,
+                          widget.area.geometry.location.lng,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(25.0),
+                      ),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 8 * 2, horizontal: 8 * 8),
+                      child: Text(
+                        "Rate this place! 📌",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(
                   height: 8 * 4,
                 ),
-                Text(state.response.result?.formattedAddress ?? "address")
+                GestureDetector(
+                  onTap: () async {
+                    var uri = Uri.parse(state.response.result?.website ?? "");
+                    var canLaunch = await canLaunchUrl(uri);
+                    if (canLaunch) {
+                      await launchUrl(uri);
+                    }
+                  },
+                  child: Text(
+                    state.response.result?.website ?? "address",
+                    style: const TextStyle(color: Colors.blueAccent),
+                  ),
+                ),
               ],
             );
           }
+
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -82,7 +146,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                 height: 8 * 4,
               ),
               Text(
-                "General Rating: ${widget.area.rating}",
+                "${widget.area.rating}/5",
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w600,

@@ -36,7 +36,7 @@ class PlaceDetailsResponseResult {
   List<Photos>? photos;
   String? placeId;
   PlusCode? plusCode;
-  double? rating;
+  num? rating;
   String? reference;
   List<Reviews>? reviews;
   List<String>? types;

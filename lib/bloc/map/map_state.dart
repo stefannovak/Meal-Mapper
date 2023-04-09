@@ -1,3 +1,4 @@
+
 part of 'map_bloc.dart';
 
 abstract class MapState extends Equatable {

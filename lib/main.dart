@@ -2,16 +2,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:mealmapper/bloc/bloc/map_bloc.dart';
+import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
+import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/firebase_options.dart';
 import 'package:mealmapper/services/api_service.dart';
 import 'package:mealmapper/screens/home_page.dart';
 
-void main() async {
+void main() {
   runApp(const MyApp());
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 }
 
 class MyApp extends StatefulWidget {
@@ -38,6 +36,7 @@ class _MyAppState extends State<MyApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<MapBloc>(create: (context) => MapBloc(apiService)),
+        BlocProvider<FirebaseBloc>(create: (context) => FirebaseBloc()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
