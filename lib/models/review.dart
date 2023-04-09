@@ -1,7 +1,7 @@
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 
 class Review {
-  late int rating;
+  late double rating;
   late String summary;
   late NearbySearchResponseResult area;
 

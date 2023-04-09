@@ -1,6 +1,7 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
@@ -90,14 +91,11 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                     ? Text("My Review: ${widget.review!.summary}")
                     : GestureDetector(
                         onTap: () async {
-                          BlocProvider.of<FirebaseBloc>(context).add(
-                            UserSubmittedReview(
-                              Review(
-                                5,
-                                "Amazing place!",
-                                widget.area,
-                              ),
-                            ),
+                          showDialog(
+                            context: context,
+                            builder: (_) {
+                              return _buildReviewDialog();
+                            },
                           );
                         },
                         child: Container(
@@ -175,6 +173,80 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           );
         },
       ),
+    );
+  }
+
+  AlertDialog _buildReviewDialog() {
+    var rating = 0.0;
+    var summary = "";
+    bool isValid = summary.isNotEmpty;
+
+    return AlertDialog(
+      title: const Text("My Review"),
+      content: Column(
+        children: [
+          RatingBar.builder(
+            itemBuilder: (context, _) => const Icon(
+              Icons.star,
+              color: Colors.amber,
+            ),
+            onRatingUpdate: (rate) {
+              rating = rate;
+            },
+            allowHalfRating: true,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            child: TextField(
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'What did you think?',
+                hintMaxLines: 5,
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 8 * 8,
+                  horizontal: 8 * 1,
+                ),
+              ),
+              onChanged: (text) {
+                setState(() {
+                  summary = text;
+                  isValid = summary.isNotEmpty;
+                });
+              },
+            ),
+          ),
+          TextField(), // Photos
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            if (!isValid) {
+              return;
+            }
+
+            BlocProvider.of<FirebaseBloc>(context).add(
+              UserSubmittedReview(
+                Review(
+                  rating,
+                  summary,
+                  widget.area,
+                ),
+              ),
+            );
+
+            Navigator.pop(context);
+          },
+          child: Text(
+            "Submit",
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: isValid ? Colors.blue : Colors.grey,
+            ),
+          ),
+        )
+      ],
     );
   }
 }
