@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
+import 'package:mealmapper/models/google/nearby_search_response.dart';
+import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/detailed_bottom_sheet.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -36,13 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (state is FetchedUserSavedPins) {
             for (var review in state.reviews) {
               markers.add(
-                Marker(
-                  markerId: MarkerId(review.placeId),
-                  position: LatLng(review.latitude, review.longitude),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueGreen,
-                  ),
-                ),
+                _createSavedMarker(review, context),
               );
             }
           }
@@ -52,57 +48,15 @@ class _MyHomePageState extends State<MyHomePage> {
           builder: (context, state) {
             if (state is FetchedNearbyArea) {
               print("Fetched");
-              state.nearbySearchResponse.results?.forEach(
-                (area) => markers.add(
-                  Marker(
-                    markerId: MarkerId(area.placeId),
-                    position: LatLng(
-                      area.geometry.location.lat,
-                      area.geometry.location.lng,
-                    ),
-                    infoWindow: InfoWindow(title: area.name),
-                    icon: BitmapDescriptor.defaultMarkerWithHue(
-                        BitmapDescriptor.hueAzure),
-                    onTap: () async {
-                      await _controller?.animateCamera(
-                        CameraUpdate.newCameraPosition(
-                          CameraPosition(
-                            target: LatLng(
-                              area.geometry.location.lat - 0.005,
-                              area.geometry.location.lng,
-                            ),
-                            zoom: await _controller?.getZoomLevel() ?? 16,
-                          ),
-                        ),
-                      );
-
-                      // ignore: use_build_context_synchronously
-                      var future = showModalBottomSheet(
-                        backgroundColor: Colors.transparent,
-                        barrierColor: Colors.transparent,
-                        context: context,
-                        builder: (context) {
-                          return DetailedBottomSheet(area: area);
-                        },
-                      );
-
-                      future.then(
-                        (value) async => await _controller?.animateCamera(
-                          CameraUpdate.newCameraPosition(
-                            CameraPosition(
-                              target: LatLng(
-                                area.geometry.location.lat,
-                                area.geometry.location.lng,
-                              ),
-                              zoom: await _controller?.getZoomLevel() ?? 16,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
+              state.nearbySearchResponse.results?.forEach((area) {
+                var markerExists =
+                    markers.any((x) => x.markerId.value == area.placeId);
+                if (!markerExists) {
+                  markers.add(
+                    _createLocalMarker(area, context),
+                  );
+                }
+              });
 
               return _buildMap(_userLatitude!, _userLongitude!);
             }
@@ -119,6 +73,112 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         ),
       ),
+    );
+  }
+
+  //SECTION - Private Methods
+
+  Marker _createLocalMarker(
+    NearbySearchResponseResult area,
+    BuildContext context,
+  ) {
+    return Marker(
+      markerId: MarkerId(area.placeId),
+      position: LatLng(
+        area.geometry.location.lat,
+        area.geometry.location.lng,
+      ),
+      infoWindow: InfoWindow(title: area.name),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+      onTap: () async {
+        await _controller?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                area.geometry.location.lat - 0.005,
+                area.geometry.location.lng,
+              ),
+              zoom: await _controller?.getZoomLevel() ?? 16,
+            ),
+          ),
+        );
+
+        // ignore: use_build_context_synchronously
+        var future = showModalBottomSheet(
+          backgroundColor: Colors.transparent,
+          barrierColor: Colors.transparent,
+          context: context,
+          builder: (context) {
+            return DetailedBottomSheet(area: area);
+          },
+        );
+
+        future.then(
+          (value) async => await _controller?.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(
+                  area.geometry.location.lat,
+                  area.geometry.location.lng,
+                ),
+                zoom: await _controller?.getZoomLevel() ?? 16,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Marker _createSavedMarker(
+    Review review,
+    BuildContext context,
+  ) {
+    return Marker(
+      markerId: MarkerId(review.area.placeId),
+      position: LatLng(
+        review.area.geometry.location.lat,
+        review.area.geometry.location.lng,
+      ),
+      infoWindow: InfoWindow(title: review.area.name),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      onTap: () async {
+        await _controller?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                review.area.geometry.location.lat - 0.005,
+                review.area.geometry.location.lng,
+              ),
+              zoom: await _controller?.getZoomLevel() ?? 16,
+            ),
+          ),
+        );
+
+        // ignore: use_build_context_synchronously
+        var future = showModalBottomSheet(
+          backgroundColor: Colors.transparent,
+          barrierColor: Colors.transparent,
+          context: context,
+          builder: (context) {
+            return DetailedBottomSheet(area: review.area, review: review);
+          },
+        );
+
+        future.then(
+          (value) async => await _controller?.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(
+                  review.area.geometry.location.lat,
+                  review.area.geometry.location.lng,
+                ),
+                zoom: await _controller?.getZoomLevel() ?? 16,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

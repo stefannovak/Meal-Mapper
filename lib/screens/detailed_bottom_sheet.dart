@@ -9,8 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class DetailedBottomSheet extends StatefulWidget {
   final NearbySearchResponseResult area;
+  final Review? review;
 
-  const DetailedBottomSheet({super.key, required this.area});
+  const DetailedBottomSheet({super.key, required this.area, this.review});
 
   @override
   State<DetailedBottomSheet> createState() => _DetailedBottomSheetState();
@@ -84,9 +85,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                         Review(
                           5,
                           "Amazing place!",
-                          widget.area.placeId,
-                          widget.area.geometry.location.lat,
-                          widget.area.geometry.location.lng,
+                          widget.area,
                         ),
                       ),
                     );

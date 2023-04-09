@@ -24,7 +24,7 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     final storage = FirebaseStorage.instance
         .ref()
         .child("TestUser")
-        .child("${event._review.placeId}.json");
+        .child("${event._review.area.placeId}.json");
     try {
       var reviewJson = jsonEncode(event._review.toJson());
       await storage.putString(reviewJson);
@@ -47,7 +47,7 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
       var userData = await storage.listAll();
       List<Review> reviews = [];
       for (var i = 0; i < userData.items.length; i++) {
-        var fullPath = await userData.items[i].fullPath;
+        var fullPath = userData.items[i].fullPath;
         var data = await storage.parent?.child(fullPath).getData();
         if (data?.toList() == null) {
           emit(FirebaseGenericFailure());
