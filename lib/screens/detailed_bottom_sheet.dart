@@ -68,48 +68,58 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                 const SizedBox(
                   height: 8 * 2,
                 ),
-                const Text(
-                  "My rating: ?/5",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
+                widget.review != null
+                    ? Text(
+                        "My rating: ${widget.review!.rating}/5",
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w200,
+                        ),
+                      )
+                    : const Text(
+                        "My rating: ?/5",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w200,
+                        ),
+                      ),
                 const SizedBox(
                   height: 8 * 4,
                 ),
-                GestureDetector(
-                  onTap: () async {
-                    BlocProvider.of<FirebaseBloc>(context).add(
-                      UserSubmittedReview(
-                        Review(
-                          5,
-                          "Amazing place!",
-                          widget.area,
+                widget.review != null
+                    ? Text("My Review: ${widget.review!.summary}")
+                    : GestureDetector(
+                        onTap: () async {
+                          BlocProvider.of<FirebaseBloc>(context).add(
+                            UserSubmittedReview(
+                              Review(
+                                5,
+                                "Amazing place!",
+                                widget.area,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(25.0),
+                            ),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8 * 2, horizontal: 8 * 8),
+                            child: Text(
+                              "Rate this place! 📌",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(25.0),
-                      ),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 8 * 2, horizontal: 8 * 8),
-                      child: Text(
-                        "Rate this place! 📌",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(
                   height: 8 * 4,
                 ),
@@ -154,7 +164,9 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
               const SizedBox(
                 height: 8 * 4,
               ),
-              Text("Rate this place!"),
+              widget.review != null
+                  ? Text("My Review: ${widget.review!.summary}")
+                  : Text("Rate this place!"),
               const SizedBox(
                 height: 8 * 4,
               ),
