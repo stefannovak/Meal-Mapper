@@ -1,4 +1,3 @@
-
 part of 'map_bloc.dart';
 
 abstract class MapState extends Equatable {
@@ -51,4 +50,13 @@ class FetchedPlaceDetails extends MapInitial {
 
   @override
   List<Object> get props => [];
+}
+
+class UpdateMapWithNewReview extends MapInitial {
+  late Review review;
+
+  UpdateMapWithNewReview(this.review);
+
+  @override
+  List<Object> get props => [review];
 }

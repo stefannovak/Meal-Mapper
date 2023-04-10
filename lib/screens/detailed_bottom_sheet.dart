@@ -5,23 +5,28 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
+import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/review.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailedBottomSheet extends StatefulWidget {
   final NearbySearchResponseResult area;
-  final Review? review;
+  Review? review;
 
-  const DetailedBottomSheet({super.key, required this.area, this.review});
+  DetailedBottomSheet({super.key, required this.area, this.review});
 
   @override
   State<DetailedBottomSheet> createState() => _DetailedBottomSheetState();
 }
 
 class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
+  late bool _userDidReview;
+  PlaceDetailsResponse? _placeDetailsResponse;
+
   @override
   void initState() {
     super.initState();
+    _userDidReview = widget.review != null;
     BlocProvider.of<MapBloc>(context)
         .add(FetchPlaceDetails(widget.area.placeId));
   }
@@ -41,101 +46,13 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
       child: BlocBuilder<MapBloc, MapState>(
         builder: (context, state) {
           if (state is FetchedPlaceDetails) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  widget.area.name ?? "Location",
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(
-                  height: 8 * 1,
-                ),
-                Text(state.response.result?.formattedAddress ?? "address"),
-                const SizedBox(
-                  height: 8 * 2,
-                ),
-                Text(
-                  "${widget.area.rating}/5",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
-                const SizedBox(
-                  height: 8 * 2,
-                ),
-                widget.review != null
-                    ? Text(
-                        "My rating: ${widget.review!.rating}/5",
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w200,
-                        ),
-                      )
-                    : const Text(
-                        "My rating: ?/5",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w200,
-                        ),
-                      ),
-                const SizedBox(
-                  height: 8 * 4,
-                ),
-                widget.review != null
-                    ? Text("My Review: ${widget.review!.summary}")
-                    : GestureDetector(
-                        onTap: () async {
-                          showDialog(
-                            context: context,
-                            builder: (_) {
-                              return _buildReviewDialog();
-                            },
-                          );
-                        },
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(25.0),
-                            ),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 8 * 2, horizontal: 8 * 8),
-                            child: Text(
-                              "Rate this place! 📌",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                const SizedBox(
-                  height: 8 * 4,
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    var uri = Uri.parse(state.response.result?.website ?? "");
-                    var canLaunch = await canLaunchUrl(uri);
-                    if (canLaunch) {
-                      await launchUrl(uri);
-                    }
-                  },
-                  child: Text(
-                    state.response.result?.website ?? "address",
-                    style: const TextStyle(color: Colors.blueAccent),
-                  ),
-                ),
-              ],
-            );
+            _placeDetailsResponse = state.response;
+
+            return _buildDetailedColumn(context);
+          }
+
+          if (_placeDetailsResponse != null) {
+            return _buildDetailedColumn(context);
           }
 
           return Column(
@@ -162,7 +79,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
               const SizedBox(
                 height: 8 * 4,
               ),
-              widget.review != null
+              _userDidReview
                   ? Text("My Review: ${widget.review!.summary}")
                   : Text("Rate this place!"),
               const SizedBox(
@@ -173,6 +90,105 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           );
         },
       ),
+    );
+  }
+
+  Column _buildDetailedColumn(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          widget.area.name ?? "Location",
+          style: const TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(
+          height: 8 * 1,
+        ),
+        Text(_placeDetailsResponse?.result?.formattedAddress ?? "address"),
+        const SizedBox(
+          height: 8 * 2,
+        ),
+        Text(
+          "${widget.area.rating}/5",
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w200,
+          ),
+        ),
+        const SizedBox(
+          height: 8 * 2,
+        ),
+        _userDidReview
+            ? Text(
+                "My rating: ${widget.review!.rating}/5",
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w200,
+                ),
+              )
+            : const Text(
+                "My rating: ?/5",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w200,
+                ),
+              ),
+        const SizedBox(
+          height: 8 * 4,
+        ),
+        _userDidReview
+            ? Text("My Review: ${widget.review!.summary}")
+            : GestureDetector(
+                onTap: () async {
+                  var future = showDialog(
+                    context: context,
+                    builder: (_) {
+                      return _buildReviewDialog();
+                    },
+                  );
+                  future.then((value) => print(value));
+                },
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(25.0),
+                    ),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 8 * 2, horizontal: 8 * 8),
+                    child: Text(
+                      "Rate this place! 📌",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+        const SizedBox(
+          height: 8 * 4,
+        ),
+        GestureDetector(
+          onTap: () async {
+            var uri = Uri.parse(_placeDetailsResponse?.result?.website ?? "");
+            var canLaunch = await canLaunchUrl(uri);
+            if (canLaunch) {
+              await launchUrl(uri);
+            }
+          },
+          child: Text(
+            _placeDetailsResponse?.result?.website ?? "address",
+            style: const TextStyle(color: Colors.blueAccent),
+          ),
+        ),
+      ],
     );
   }
 
@@ -226,15 +242,22 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
               return;
             }
 
-            BlocProvider.of<FirebaseBloc>(context).add(
-              UserSubmittedReview(
-                Review(
-                  rating,
-                  summary,
-                  widget.area,
-                ),
-              ),
+            setState(() {
+              _userDidReview = true;
+              widget.review = Review(rating, summary, widget.area);
+            });
+
+            var review = Review(
+              rating,
+              summary,
+              widget.area,
             );
+
+            BlocProvider.of<FirebaseBloc>(context)
+                .add(UserSubmittedReview(review));
+
+            BlocProvider.of<MapBloc>(context)
+                .add(UserSubmittedReviewLocally(review));
 
             Navigator.pop(context);
           },

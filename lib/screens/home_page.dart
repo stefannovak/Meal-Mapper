@@ -37,9 +37,26 @@ class _MyHomePageState extends State<MyHomePage> {
         listener: (context, state) {
           if (state is FetchedUserSavedPins) {
             for (var review in state.reviews) {
-              markers.add(
-                _createSavedMarker(review, context),
+              var existingMarker = markers.firstWhere(
+                (x) => x.markerId.value == review.area.placeId,
+                orElse: () => const Marker(
+                  markerId: MarkerId("-1"),
+                ),
               );
+
+              setState(() {
+                if (existingMarker.markerId.value == "-1") {
+                  markers.add(
+                    _createSavedMarker(review, context),
+                  );
+                  return;
+                }
+
+                markers.remove(existingMarker);
+                markers.add(
+                  _createSavedMarker(review, context),
+                );
+              });
             }
           }
         },
@@ -65,6 +82,19 @@ class _MyHomePageState extends State<MyHomePage> {
               _userLatitude = state.latitude;
               _userLongitude = state.longitude;
               return _buildMap(state.latitude, state.longitude);
+            }
+
+            if (state is UpdateMapWithNewReview) {
+              var existingMarker = markers.firstWhere(
+                (x) => x.markerId.value == state.review.area.placeId,
+              );
+
+              markers.remove(existingMarker);
+              markers.add(
+                _createSavedMarker(state.review, context),
+              );
+
+              return _buildMap(_userLatitude!, _userLongitude!);
             }
 
             return _userLatitude != null && _userLongitude != null
@@ -113,8 +143,8 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         );
 
-        future.then(
-          (value) async => await _controller?.animateCamera(
+        future.then((value) async {
+          await _controller?.animateCamera(
             CameraUpdate.newCameraPosition(
               CameraPosition(
                 target: LatLng(
@@ -124,8 +154,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 zoom: await _controller?.getZoomLevel() ?? 16,
               ),
             ),
-          ),
-        );
+          );
+
+          print(value);
+        });
       },
     );
   }

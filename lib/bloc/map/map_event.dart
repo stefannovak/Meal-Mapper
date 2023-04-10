@@ -41,3 +41,9 @@ class FetchPlaceDetails extends MapEvent {
     _placeId = placeId;
   }
 }
+
+class UserSubmittedReviewLocally extends MapEvent {
+  late Review review;
+
+  UserSubmittedReviewLocally(this.review);
+}

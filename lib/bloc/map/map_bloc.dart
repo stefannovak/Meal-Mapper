@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
+import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/services/api_service.dart';
 
 part 'map_event.dart';
@@ -18,6 +19,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<UserClickedMap>(_onUserClickedMap);
     on<GetLocalPlaces>(_onGetLocalPlaces);
     on<FetchPlaceDetails>(_onFetchPlaceDetails);
+    on<UserSubmittedReviewLocally>(_onUserSubmittedReviewLocally);
   }
 
   Future<void> _onGetCurrentLocation(
@@ -111,5 +113,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     if (response.isSuccess && response.success != null) {
       emit(FetchedPlaceDetails(response.success!));
     }
+  }
+
+  Future<void> _onUserSubmittedReviewLocally(
+    UserSubmittedReviewLocally event,
+    Emitter<MapState> emit,
+  ) async {
+    emit(UpdateMapWithNewReview(event.review));
   }
 }

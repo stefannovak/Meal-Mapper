@@ -22,5 +22,5 @@ class FetchedUserSavedPins extends FirebaseInitial {
   FetchedUserSavedPins(this.reviews);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [reviews];
 }
