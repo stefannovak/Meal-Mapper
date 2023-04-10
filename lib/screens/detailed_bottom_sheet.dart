@@ -2,11 +2,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/review.dart';
+import 'package:mealmapper/models/review_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DetailedBottomSheet extends StatefulWidget {
@@ -47,7 +49,6 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
         builder: (context, state) {
           if (state is FetchedPlaceDetails) {
             _placeDetailsResponse = state.response;
-
             return _buildDetailedColumn(context);
           }
 
@@ -144,13 +145,12 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
             ? Text("My Review: ${widget.review!.summary}")
             : GestureDetector(
                 onTap: () async {
-                  var future = showDialog(
+                  await showDialog(
                     context: context,
                     builder: (_) {
                       return _buildReviewDialog();
                     },
                   );
-                  future.then((value) => print(value));
                 },
                 child: Container(
                   decoration: const BoxDecoration(
@@ -196,6 +196,8 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
     var rating = 0.0;
     var summary = "";
     bool isValid = summary.isNotEmpty;
+    List<ReviewImage> images = [];
+    final ImagePicker picker = ImagePicker();
 
     return AlertDialog(
       title: const Text("My Review"),
@@ -232,7 +234,30 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
               },
             ),
           ),
-          TextField(), // Photos
+          Row(
+            children: [
+              GestureDetector(
+                child: const Icon(Icons.camera_alt),
+                onTap: () async {
+                  var image =
+                      await picker.pickImage(source: ImageSource.camera);
+                  if (image != null) {
+                    images.add(ReviewImage(image.path, image.name));
+                  }
+                },
+              ),
+              GestureDetector(
+                child: const Icon(Icons.photo_album),
+                onTap: () async {
+                  var image =
+                      await picker.pickImage(source: ImageSource.gallery);
+                  if (image != null) {
+                    images.add(ReviewImage(image.path, image.name));
+                  }
+                },
+              ),
+            ],
+          ),
         ],
       ),
       actions: [
@@ -244,14 +269,10 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
 
             setState(() {
               _userDidReview = true;
-              widget.review = Review(rating, summary, widget.area);
+              widget.review = Review(rating, summary, widget.area, images);
             });
 
-            var review = Review(
-              rating,
-              summary,
-              widget.area,
-            );
+            var review = Review(rating, summary, widget.area, images);
 
             BlocProvider.of<FirebaseBloc>(context)
                 .add(UserSubmittedReview(review));

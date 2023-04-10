@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:core';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -24,10 +25,25 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     final storage = FirebaseStorage.instance
         .ref()
         .child("TestUser")
-        .child("${event._review.area.placeId}.json");
+        .child(event._review.area.placeId);
+
+    final jsonStorage = storage.child("${event._review.area.placeId}.json");
+
     try {
       var reviewJson = jsonEncode(event._review.toJson());
-      await storage.putString(reviewJson);
+      var jsonResult = await jsonStorage.putString(reviewJson);
+      if (jsonResult.state == TaskState.success) {
+        for (var image in event._review.images) {
+          var file = File(image.path);
+          var imageStorage = storage.child(image.name);
+          var imageResult = await imageStorage.putFile(file);
+          if (imageResult.state == TaskState.error) {
+            print("failed uploading image");
+            emit(FirebaseGenericFailure());
+          }
+        }
+      }
+
       emit(FirebaseGenericSuccess());
     } catch (e) {
       print(e);
