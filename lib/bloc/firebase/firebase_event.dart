@@ -16,3 +16,13 @@ class UserSubmittedReview extends FirebaseEvent {
 }
 
 class GetUserPinsOnLoad extends FirebaseEvent {}
+
+class GetReviewImages extends FirebaseEvent {
+  late String placeId;
+  late Review review;
+
+  GetReviewImages(this.placeId, this.review);
+
+  @override
+  List<Object> get props => [];
+}

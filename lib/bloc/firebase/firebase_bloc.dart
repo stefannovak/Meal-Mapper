@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mealmapper/firebase_options.dart';
 import 'package:mealmapper/models/review.dart';
 
@@ -16,6 +18,7 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
   FirebaseBloc() : super(FirebaseInitial()) {
     on<UserSubmittedReview>(_onUserSubmittedReview);
     on<GetUserPinsOnLoad>(_onGetUserPinsOnLoad);
+    on<GetReviewImages>(_onGetReviewImages);
   }
 
   Future<void> _onUserSubmittedReview(
@@ -62,15 +65,35 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     try {
       var userData = await storage.listAll();
       List<Review> reviews = [];
-      for (var i = 0; i < userData.items.length; i++) {
-        var fullPath = userData.items[i].fullPath;
-        var data = await storage.parent?.child(fullPath).getData();
-        if (data?.toList() == null) {
+      for (var reference in userData.prefixes) {
+        var placeStorage = storage.child(reference.name);
+        var jsonDataReference = placeStorage.child("${reference.name}.json");
+        var reviewData = await jsonDataReference.getData();
+        if (reviewData?.toList() == null) {
           emit(FirebaseGenericFailure());
           return;
         }
-        var review = Review.fromJson(jsonDecode(utf8.decode(data!.toList())));
+
+        var review =
+            Review.fromJson(jsonDecode(utf8.decode(reviewData!.toList())));
         reviews.add(review);
+
+        // var review =
+        //     Review.fromJson(jsonDecode(utf8.decode(reviewData!.toList())));
+        // for (var image in review.images) {
+        //   var photoData = await placeStorage.child(image.name).getData();
+        // }
+
+        // for (var i = 0; i < placeData.items.length; i++) {
+        //   var fullPath = placeData.items[i].fullPath;
+        //   var data = await storage.parent?.child(fullPath).getData();
+        //   if (data?.toList() == null) {
+        //     emit(FirebaseGenericFailure());
+        //     return;
+        //   }
+        //   var review = Review.fromJson(jsonDecode(utf8.decode(data!.toList())));
+        //   reviews.add(review);
+        // }
       }
 
       emit(FetchedUserSavedPins(reviews));
@@ -78,5 +101,27 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
       print(e);
       emit(FirebaseGenericFailure());
     }
+  }
+
+  Future<void> _onGetReviewImages(
+    GetReviewImages event,
+    Emitter<FirebaseState> emit,
+  ) async {
+    final storage =
+        FirebaseStorage.instance.ref().child("TestUser").child(event.placeId);
+    List<Uint8List> imagesMemory = [];
+    for (var imageData in event.review.images) {
+      try {
+        var data = await storage.child(imageData.name).getData();
+        if (data != null) {
+          imagesMemory.add(data);
+        }
+      } catch (e) {
+        emit(FirebaseGenericFailure());
+        return;
+      }
+    }
+
+    emit(FetchedReviewImages(imagesMemory));
   }
 }
