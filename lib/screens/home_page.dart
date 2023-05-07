@@ -10,6 +10,7 @@ import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
 import 'package:mealmapper/screens/detailed_bottom_sheet.dart';
+import 'package:mealmapper/screens/profile_screen.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -241,31 +242,48 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildMap(double latitude, double longitude) {
-    return GoogleMap(
-      mapType: MapType.hybrid,
-      myLocationEnabled: true,
-      initialCameraPosition: CameraPosition(
-        target: LatLng(latitude, longitude),
-        zoom: 16,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Meal Mapper"),
+        toolbarHeight: MediaQuery.of(context).size.height * 0.05,
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.person)),
+        ],
       ),
-      onMapCreated: (controller) {
-        _controller = controller;
-      },
-      markers: markers,
-      onTap: (loc) async {
-        BlocProvider.of<MapBloc>(context)
-            .add(UserClickedMap(loc.latitude, loc.longitude));
-      },
-      onLongPress: (loc) {
-        var marker = Marker(
-          markerId: MarkerId(loc.latitude.toString()),
-          position: LatLng(loc.latitude, loc.longitude),
-          infoWindow: InfoWindow(title: "test"),
-        );
-        setState(() {
-          markers.add(marker);
-        });
-      },
+      body: GoogleMap(
+        mapType: MapType.hybrid,
+        myLocationEnabled: true,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(latitude, longitude),
+          zoom: 16,
+        ),
+        onMapCreated: (controller) {
+          _controller = controller;
+        },
+        markers: markers,
+        onTap: (loc) async {
+          BlocProvider.of<MapBloc>(context)
+              .add(UserClickedMap(loc.latitude, loc.longitude));
+        },
+        onLongPress: (loc) {
+          var marker = Marker(
+            markerId: MarkerId(loc.latitude.toString()),
+            position: LatLng(loc.latitude, loc.longitude),
+            infoWindow: InfoWindow(title: "test"),
+          );
+          setState(() {
+            markers.add(marker);
+          });
+        },
+      ),
     );
   }
 }
