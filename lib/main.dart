@@ -1,14 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:mealmapper/bloc/authentication/authentication_bloc.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/firebase_options.dart';
+import 'package:mealmapper/screens/authentication_screen.dart';
 import 'package:mealmapper/services/api_service.dart';
 import 'package:mealmapper/screens/home_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -22,12 +27,14 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late Client httpClient;
   late ApiService apiService;
+  bool _isUserSignedIn = false;
 
   @override
   void initState() {
+    super.initState();
     httpClient = Client();
     apiService = ApiService(httpClient);
-    super.initState();
+    _isUserSignedIn = FirebaseAuth.instance.currentUser != null;
   }
 
   // This widget is the root of your application.
@@ -37,6 +44,8 @@ class _MyAppState extends State<MyApp> {
       providers: [
         BlocProvider<MapBloc>(create: (context) => MapBloc(apiService)),
         BlocProvider<FirebaseBloc>(create: (context) => FirebaseBloc()),
+        BlocProvider<AuthenticationBloc>(
+            create: (context) => AuthenticationBloc()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -52,7 +61,8 @@ class _MyAppState extends State<MyApp> {
           // is not restarted.
           primarySwatch: Colors.blue,
         ),
-        home: const MyHomePage(),
+        home:
+            _isUserSignedIn ? const MyHomePage() : const AuthenticationScreen(),
       ),
     );
   }

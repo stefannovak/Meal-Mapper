@@ -33,3 +33,5 @@ class FetchedReviewImages extends FirebaseInitial {
   @override
   List<Object> get props => [imagesMemory];
 }
+
+class UnauthenticatedUserError extends FirebaseInitial {}

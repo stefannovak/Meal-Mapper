@@ -23,14 +23,12 @@ class DetailedBottomSheet extends StatefulWidget {
 }
 
 class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
-  late bool _userDidReview;
   PlaceDetailsResponse? _placeDetailsResponse;
   List<Image> _reviewImages = [];
 
   @override
   void initState() {
     super.initState();
-    _userDidReview = widget.review != null;
     BlocProvider.of<MapBloc>(context)
         .add(FetchPlaceDetails(widget.area.placeId));
 
@@ -55,6 +53,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
       ),
       child: BlocListener<FirebaseBloc, FirebaseState>(
         listener: (context, state) {
+          print(state);
           if (state is FetchedReviewImages) {
             for (var data in state.imagesMemory) {
               var image = Image.memory(
@@ -69,6 +68,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
         },
         child: BlocBuilder<MapBloc, MapState>(
           builder: (context, state) {
+            print(state);
             if (state is FetchedPlaceDetails) {
               _placeDetailsResponse = state.response;
               return _buildDetailedColumn(context);
@@ -106,10 +106,10 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                 const SizedBox(
                   height: 8 * 4,
                 ),
-                _userDidReview
+                widget.review != null
                     ? Center(
                         child: Text("My Review: ${widget.review!.summary}"))
-                    : Center(child: Text("Rate this place!")),
+                    : const Center(child: Text("Rate this place!")),
                 const SizedBox(
                   height: 8 * 4,
                 ),
@@ -140,8 +140,10 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
             height: 8 * 1,
           ),
           Center(
-              child: Text(_placeDetailsResponse?.result?.formattedAddress ??
-                  "address")),
+            child: Text(
+              _placeDetailsResponse?.result?.formattedAddress ?? "address",
+            ),
+          ),
           const SizedBox(
             height: 8 * 2,
           ),
@@ -157,7 +159,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           const SizedBox(
             height: 8 * 2,
           ),
-          _userDidReview
+          widget.review != null
               ? Center(
                   child: Text(
                     "My rating: ${widget.review!.rating}/5",
@@ -179,17 +181,28 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           const SizedBox(
             height: 8 * 4,
           ),
-          _userDidReview
+          widget.review != null
               ? Center(child: Text("My Review: ${widget.review!.summary}"))
               : Center(
                   child: GestureDetector(
                     onTap: () async {
-                      await showDialog(
+                      var future = showDialog(
                         context: context,
                         builder: (_) {
                           return _buildReviewDialog();
                         },
                       );
+
+                      future.then((value) {
+                        if (value.runtimeType == Review) {
+                          BlocProvider.of<FirebaseBloc>(context).add(
+                            GetReviewImages(widget.area.placeId, value),
+                          );
+                          setState(() {
+                            widget.review = value;
+                          });
+                        }
+                      });
                     },
                     child: Container(
                       decoration: const BoxDecoration(
@@ -323,12 +336,6 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
             if (!isValid) {
               return;
             }
-
-            setState(() {
-              _userDidReview = true;
-              widget.review = Review(rating, summary, widget.area, images);
-            });
-
             var review = Review(rating, summary, widget.area, images);
 
             BlocProvider.of<FirebaseBloc>(context)
@@ -337,13 +344,17 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
             BlocProvider.of<MapBloc>(context)
                 .add(UserSubmittedReviewLocally(review));
 
-            Navigator.pop(context);
+            // setState(() {
+            //   widget.review = Review(rating, summary, widget.area, images);
+            // });
+
+            Navigator.pop(context, review);
           },
           child: Text(
             "Submit",
             textAlign: TextAlign.end,
             style: TextStyle(
-              color: isValid ? Colors.blue : Colors.grey,
+              color: true ? Colors.blue : Colors.grey,
             ),
           ),
         )

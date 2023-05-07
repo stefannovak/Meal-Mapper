@@ -20,7 +20,7 @@ class ApiService {
     var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
         "location=$latitude%2C$longitude" +
         "&radius=$radius" +
-        "&type=restaurant|bar" +
+        "&type=restaurant|bar|bakery|meal_delivery|meal_takeaway|cafe" +
         "&key=$_googleApiKey";
 
     var response = await _client.get(Uri.parse(url));
