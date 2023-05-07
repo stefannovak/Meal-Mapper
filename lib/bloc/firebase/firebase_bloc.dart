@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
@@ -25,9 +26,15 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     UserSubmittedReview event,
     Emitter<FirebaseState> emit,
   ) async {
+    var userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      emit(UnauthenticatedUserError());
+      return;
+    }
+
     final storage = FirebaseStorage.instance
         .ref()
-        .child("TestUser")
+        .child(userId)
         .child(event._review.area.placeId);
 
     final jsonStorage = storage.child("${event._review.area.placeId}.json");
@@ -61,7 +68,13 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    final storage = FirebaseStorage.instance.ref().child("TestUser");
+    var userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      emit(UnauthenticatedUserError());
+      return;
+    }
+
+    final storage = FirebaseStorage.instance.ref().child(userId);
     try {
       var userData = await storage.listAll();
       List<Review> reviews = [];
@@ -90,8 +103,15 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     GetReviewImages event,
     Emitter<FirebaseState> emit,
   ) async {
+    var userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      emit(UnauthenticatedUserError());
+      return;
+    }
+
     final storage =
-        FirebaseStorage.instance.ref().child("TestUser").child(event.placeId);
+        FirebaseStorage.instance.ref().child(userId).child(event.placeId);
+
     List<Uint8List> imagesMemory = [];
     for (var imageData in event.review.images) {
       try {
