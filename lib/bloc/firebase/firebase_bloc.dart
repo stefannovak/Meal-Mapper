@@ -65,9 +65,8 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     GetUserPinsOnLoad event,
     Emitter<FirebaseState> emit,
   ) async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    emit(UnauthenticatedUserError());
+    return;
     var userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       emit(UnauthenticatedUserError());

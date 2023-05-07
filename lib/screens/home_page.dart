@@ -8,6 +8,7 @@ import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/review.dart';
+import 'package:mealmapper/screens/authentication_screen.dart';
 import 'package:mealmapper/screens/detailed_bottom_sheet.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -35,7 +36,31 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocListener<FirebaseBloc, FirebaseState>(
-        listener: (context, state) {
+        listener: (context, state) async {
+          if (state is UnauthenticatedUserError) {
+            await showDialog(
+              context: context,
+              builder: (builder) {
+                return AlertDialog(
+                  title: Text("Something went wrong"),
+                  actions: [
+                    TextButton(
+                      child: const Text('Okay'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const AuthenticationScreen(),
+              ),
+            );
+          }
           if (state is FetchedUserSavedPins) {
             for (var review in state.reviews) {
               var existingMarker = markers.firstWhere(
