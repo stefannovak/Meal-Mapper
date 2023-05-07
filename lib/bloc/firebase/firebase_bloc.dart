@@ -77,23 +77,6 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
         var review =
             Review.fromJson(jsonDecode(utf8.decode(reviewData!.toList())));
         reviews.add(review);
-
-        // var review =
-        //     Review.fromJson(jsonDecode(utf8.decode(reviewData!.toList())));
-        // for (var image in review.images) {
-        //   var photoData = await placeStorage.child(image.name).getData();
-        // }
-
-        // for (var i = 0; i < placeData.items.length; i++) {
-        //   var fullPath = placeData.items[i].fullPath;
-        //   var data = await storage.parent?.child(fullPath).getData();
-        //   if (data?.toList() == null) {
-        //     emit(FirebaseGenericFailure());
-        //     return;
-        //   }
-        //   var review = Review.fromJson(jsonDecode(utf8.decode(data!.toList())));
-        //   reviews.add(review);
-        // }
       }
 
       emit(FetchedUserSavedPins(reviews));

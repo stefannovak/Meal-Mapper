@@ -64,7 +64,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     var response = await _apiService.getGoogleNearbySearch(
       position.latitude,
       position.longitude,
-      radius: 500,
+      radius: 800,
     );
 
     if (response.isSuccess && response.success != null) {
@@ -93,8 +93,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     final response = await _apiService.getGoogleNearbySearch(
       event._latitude,
       event._longitude,
-      // radius: 800,
-      radius: 100,
+      radius: 800,
+      // radius: 100,
     );
 
     if (response.isSuccess && response.success != null) {
