@@ -39,10 +39,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 BlocProvider.of<AuthenticationBloc>(context)
                     .add(UserSignedOut());
 
-                Navigator.of(context).push(
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
                     builder: (context) => const AuthenticationScreen(),
                   ),
+                  (Route<dynamic> route) => false,
                 );
               },
               child: const Padding(
@@ -77,11 +78,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             BlocProvider.of<AuthenticationBloc>(context)
                                 .add(UserDeletedAccount());
 
-                            Navigator.of(context).push(
+                            Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (context) =>
                                     const AuthenticationScreen(),
                               ),
+                              (Route<dynamic> route) => false,
                             );
                           },
                           child: Text('Yes'),

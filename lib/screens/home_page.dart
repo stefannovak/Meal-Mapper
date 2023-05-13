@@ -29,7 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<FirebaseBloc>(context).add(GetUserPinsOnLoad());
+    // BlocProvider.of<FirebaseBloc>(context).add(GetUserPinsOnLoad());
     BlocProvider.of<MapBloc>(context).add(const GetCurrentLocation());
   }
 
@@ -102,7 +102,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
               });
 
-              return _buildMap(_userLatitude!, _userLongitude!);
+              return _userLatitude != null && _userLongitude != null
+                  ? _buildMap(_userLatitude!, _userLongitude!)
+                  : const Center(child: CircularProgressIndicator());
             }
 
             if (state is FetchedLocation) {
@@ -121,7 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 _createSavedMarker(state.review, context),
               );
 
-              return _buildMap(_userLatitude!, _userLongitude!);
+              return _userLatitude != null && _userLongitude != null
+                  ? _buildMap(_userLatitude!, _userLongitude!)
+                  : const Center(child: CircularProgressIndicator());
             }
 
             return _userLatitude != null && _userLongitude != null

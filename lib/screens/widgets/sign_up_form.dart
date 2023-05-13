@@ -2,29 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealmapper/bloc/authentication/authentication_bloc.dart';
 
-class EmailPasswordForm extends StatefulWidget {
-  const EmailPasswordForm({super.key});
+class SignUpForm extends StatefulWidget {
+  const SignUpForm({super.key});
 
   @override
-  EmailPasswordFormState createState() {
-    return EmailPasswordFormState();
+  SignUpFormState createState() {
+    return SignUpFormState();
   }
 }
 
-// Define a corresponding State class.
-// This class holds data related to the form.
-class EmailPasswordFormState extends State<EmailPasswordForm> {
-  // Create a global key that uniquely identifies the Form widget
-  // and allows validation of the form.
-  //
-  // Note: This is a `GlobalKey<FormState>`,
-  // not a GlobalKey<MyCustomFormState>.
+class SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     String? email;
     String? password;
+    String? confirmPassword;
 
     // Build a Form widget using the _formKey created above.
     return Form(
@@ -54,6 +48,29 @@ class EmailPasswordFormState extends State<EmailPasswordForm> {
               if (value == null || value.isEmpty) {
                 return 'Please enter some text';
               }
+              if (!isValidPassword(value)) {
+                return 'Invalid password';
+              }
+              if (value != confirmPassword) {
+                return "Passwords do not match";
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            decoration: const InputDecoration(label: Text("Confirm Password")),
+            onChanged: (value) => confirmPassword = value,
+            obscureText: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              if (!isValidPassword(value)) {
+                return 'Invalid password';
+              }
+              if (value != password) {
+                return "Passwords do not match";
+              }
               return null;
             },
           ),
@@ -63,19 +80,26 @@ class EmailPasswordFormState extends State<EmailPasswordForm> {
               // Validate returns true if the form is valid, or false otherwise.
               if (_formKey.currentState!.validate() &&
                   email != null &&
-                  password != null) {
+                  password != null &&
+                  confirmPassword != null) {
                 BlocProvider.of<AuthenticationBloc>(context).add(
-                  UserLoggedIn(
+                  UserCreatedAccount(
                     email!,
                     password!,
                   ),
                 );
               }
             },
-            child: const Text('Log in'),
+            child: const Text('Sign up'),
           ),
         ],
       ),
     );
   }
+}
+
+bool isValidPassword(String value) {
+  RegExp passwordRegex =
+      RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
+  return passwordRegex.hasMatch(value);
 }
