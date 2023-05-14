@@ -29,7 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    // BlocProvider.of<FirebaseBloc>(context).add(GetUserPinsOnLoad());
+    BlocProvider.of<FirebaseBloc>(context).add(GetUserPinsOnLoad());
     BlocProvider.of<MapBloc>(context).add(const GetCurrentLocation());
   }
 
