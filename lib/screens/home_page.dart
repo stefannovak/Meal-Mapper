@@ -23,6 +23,7 @@ class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController? _controller;
   double? _userLatitude;
   double? _userLongitude;
+  bool _isSearchBarActive = false;
 
   Set<Marker> markers = HashSet<Marker>();
 
@@ -94,6 +95,13 @@ class _MyHomePageState extends State<MyHomePage> {
               print("Fetched");
 
               var area = state.nearbySearchResponse.results!.first;
+
+              // TODO: - Future problem, clicked near the marker shows an unreviewed version of that marker.
+              // try {
+              //   var existingMarker = markers.firstWhere(
+              //     (x) => x.markerId.value == area.placeId,
+              //   );
+              // } catch (e) {}
 
               _controller
                   ?.animateCamera(
@@ -287,42 +295,96 @@ class _MyHomePageState extends State<MyHomePage> {
         toolbarHeight: MediaQuery.of(context).size.height * 0.05,
         actions: [
           IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.person)),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.person),
+          ),
         ],
       ),
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        myLocationEnabled: true,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(latitude, longitude),
-          zoom: 16,
+      body: GestureDetector(
+        onTap: () {
+          if (_isSearchBarActive) {
+            setState(() {
+              _isSearchBarActive = false;
+              FocusScope.of(context).requestFocus(FocusNode());
+            });
+          }
+        },
+        child: Stack(
+          children: [
+            GoogleMap(
+              mapType: MapType.hybrid,
+              myLocationEnabled: true,
+              initialCameraPosition: CameraPosition(
+                target: LatLng(latitude, longitude),
+                zoom: 16,
+              ),
+              onMapCreated: (controller) {
+                _controller = controller;
+              },
+              markers: markers,
+              onTap: (loc) async {
+                if (!_isSearchBarActive) {
+                  print("ONTAP");
+                  BlocProvider.of<MapBloc>(context).add(
+                    UserClickedMap(loc.latitude, loc.longitude),
+                  );
+                }
+              },
+              onLongPress: (loc) {
+                var marker = Marker(
+                  markerId: MarkerId(loc.latitude.toString()),
+                  position: LatLng(loc.latitude, loc.longitude),
+                  infoWindow: InfoWindow(title: "test"),
+                );
+                setState(() {
+                  markers.add(marker);
+                });
+              },
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: FractionallySizedBox(
+                widthFactor: 1.0,
+                child: Container(
+                  color: Colors.white,
+                  child: TextField(
+                    // controller: _searchController,
+                    onChanged: (value) {
+                      // Handle search text changes
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _isSearchBarActive = !_isSearchBarActive;
+                            if (!_isSearchBarActive) {
+                              FocusScope.of(context).requestFocus(FocusNode());
+                            }
+                          });
+                          // Print the text field value to the console
+                          // print('Search query: ${_searchController.text}');
+                        },
+                        icon: Icon(Icons.search),
+                      ),
+                    ),
+                    style: TextStyle(fontSize: 22),
+                    maxLength: 22,
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
-        onMapCreated: (controller) {
-          _controller = controller;
-        },
-        markers: markers,
-        onTap: (loc) async {
-          print("ONTAP");
-          BlocProvider.of<MapBloc>(context)
-              .add(UserClickedMap(loc.latitude, loc.longitude));
-        },
-        onLongPress: (loc) {
-          var marker = Marker(
-            markerId: MarkerId(loc.latitude.toString()),
-            position: LatLng(loc.latitude, loc.longitude),
-            infoWindow: InfoWindow(title: "test"),
-          );
-          setState(() {
-            markers.add(marker);
-          });
-        },
       ),
     );
   }
