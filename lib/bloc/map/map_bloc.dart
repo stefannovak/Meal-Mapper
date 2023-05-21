@@ -61,15 +61,15 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     // continue accessing the position of the device.
     var position = await Geolocator.getCurrentPosition();
     emit(FetchedLocation(position.latitude, position.longitude));
-    var response = await _apiService.getGoogleNearbySearch(
-      position.latitude,
-      position.longitude,
-      radius: 800,
-    );
+    // var response = await _apiService.getGoogleNearbySearch(
+    //   position.latitude,
+    //   position.longitude,
+    //   radius: 800,
+    // );
 
-    if (response.isSuccess && response.success != null) {
-      emit(FetchedNearbyArea(response.success!));
-    }
+    // if (response.isSuccess && response.success != null) {
+    //   emit(FetchedNearbyArea(response.success!));
+    // }
   }
 
   Future<void> _onUserClickedMap(
@@ -81,9 +81,14 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       event._longitude,
     );
 
-    if (response.isSuccess && response.success != null) {
+    if (response.isSuccess &&
+        response.success != null &&
+        response.success?.results?.isNotEmpty == true) {
       emit(FetchedNearbyArea(response.success!));
+      return;
     }
+
+    print("getGoogleNearbySearch was empty");
   }
 
   Future<void> _onGetLocalPlaces(

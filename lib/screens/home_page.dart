@@ -92,14 +92,45 @@ class _MyHomePageState extends State<MyHomePage> {
           builder: (context, state) {
             if (state is FetchedNearbyArea) {
               print("Fetched");
-              state.nearbySearchResponse.results?.forEach((area) {
-                var markerExists =
-                    markers.any((x) => x.markerId.value == area.placeId);
-                if (!markerExists) {
-                  markers.add(
-                    _createLocalMarker(area, context),
+
+              var area = state.nearbySearchResponse.results!.first;
+
+              _controller
+                  ?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: LatLng(
+                      area.geometry.location.lat - 0.005,
+                      area.geometry.location.lng,
+                    ),
+                    zoom: 16,
+                  ),
+                ),
+              )
+                  .then((value) {
+                // ignore: use_build_context_synchronously
+                var future = showModalBottomSheet(
+                  backgroundColor: Colors.transparent,
+                  barrierColor: Colors.transparent,
+                  context: context,
+                  builder: (context) {
+                    return DetailedBottomSheet(area: area);
+                  },
+                );
+
+                future.then((value) async {
+                  await _controller?.animateCamera(
+                    CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                        target: LatLng(
+                          area.geometry.location.lat,
+                          area.geometry.location.lng,
+                        ),
+                        zoom: await _controller?.getZoomLevel() ?? 16,
+                      ),
+                    ),
                   );
-                }
+                });
               });
 
               return _userLatitude != null && _userLongitude != null
@@ -114,14 +145,18 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             if (state is UpdateMapWithNewReview) {
-              var existingMarker = markers.firstWhere(
-                (x) => x.markerId.value == state.review.area.placeId,
-              );
-
-              markers.remove(existingMarker);
               markers.add(
                 _createSavedMarker(state.review, context),
               );
+
+              // var existingMarker = markers.firstWhere(
+              //   (x) => x.markerId.value == state.review.area.placeId,
+              // );
+
+              // markers.remove(existingMarker);
+              // markers.add(
+              //   _createSavedMarker(state.review, context),
+              // );
 
               return _userLatitude != null && _userLongitude != null
                   ? _buildMap(_userLatitude!, _userLongitude!)
@@ -274,6 +309,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         markers: markers,
         onTap: (loc) async {
+          print("ONTAP");
           BlocProvider.of<MapBloc>(context)
               .add(UserClickedMap(loc.latitude, loc.longitude));
         },

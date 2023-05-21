@@ -15,7 +15,7 @@ class ApiService {
   Future<Result<NearbySearchResponse, String>> getGoogleNearbySearch(
     double latitude,
     double longitude, {
-    int? radius = 10,
+    int? radius = 20,
   }) async {
     var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
         "location=$latitude%2C$longitude" +
