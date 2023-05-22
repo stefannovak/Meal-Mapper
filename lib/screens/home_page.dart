@@ -24,6 +24,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double? _userLatitude;
   double? _userLongitude;
   bool _isSearchBarActive = false;
+  final TextEditingController _searchController = TextEditingController();
+  FocusNode _searchFocusNode = FocusNode();
 
   Set<Marker> markers = HashSet<Marker>();
 
@@ -347,42 +349,58 @@ class _MyHomePageState extends State<MyHomePage> {
                 });
               },
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: FractionallySizedBox(
-                widthFactor: 1.0,
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: AnimatedContainer(
+                padding: EdgeInsets.zero,
+                duration: Duration(milliseconds: 300),
+                height: 80,
                 child: Container(
+                  padding: EdgeInsets.zero,
                   color: Colors.white,
-                  child: TextField(
-                    // controller: _searchController,
-                    onChanged: (value) {
-                      // Handle search text changes
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          onChanged: (value) {
+                            // Handle search text changes
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.zero,
+                            hintText: 'Search',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isSearchBarActive = !_isSearchBarActive;
+                                  if (_isSearchBarActive) {
+                                    FocusScope.of(context)
+                                        .requestFocus(_searchFocusNode);
+                                  } else {
+                                    _searchFocusNode.unfocus();
+                                  }
+                                });
+                                // Print the text field value to the console
+                                print(
+                                    'Search query: ${_searchController.text}');
+                              },
+                              icon: const Icon(Icons.search),
+                            ),
+                          ),
+                          style: const TextStyle(fontSize: 22),
+                        ),
                       ),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isSearchBarActive = !_isSearchBarActive;
-                            if (!_isSearchBarActive) {
-                              FocusScope.of(context).requestFocus(FocusNode());
-                            }
-                          });
-                          // Print the text field value to the console
-                          // print('Search query: ${_searchController.text}');
-                        },
-                        icon: Icon(Icons.search),
-                      ),
-                    ),
-                    style: TextStyle(fontSize: 22),
-                    maxLength: 22,
+                    ],
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
