@@ -11,6 +11,7 @@ import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
 import 'package:mealmapper/screens/detailed_bottom_sheet.dart';
 import 'package:mealmapper/screens/profile_screen.dart';
+import 'package:mealmapper/screens/search_response_bottom_sheet.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -59,11 +60,13 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
 
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const AuthenticationScreen(),
-              ),
-            );
+            if (mounted) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AuthenticationScreen(),
+                ),
+              );
+            }
           }
           if (state is FetchedUserSavedPins) {
             for (var review in state.reviews) {
@@ -93,6 +96,20 @@ class _MyHomePageState extends State<MyHomePage> {
         child: BlocConsumer<MapBloc, MapState>(
           listener: (context, state) {},
           builder: (context, state) {
+            if (state is FetchedSearchResponse) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                var future = showModalBottomSheet(
+                  backgroundColor: Colors.transparent,
+                  barrierColor: Colors.transparent,
+                  context: context,
+                  builder: (context) {
+                    return SearchResponseBottomSheet(
+                      results: state.response.results!,
+                    );
+                  },
+                );
+              });
+            }
             if (state is FetchedNearbyArea) {
               print("Fetched");
 
@@ -386,9 +403,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     _searchFocusNode.unfocus();
                                   }
                                 });
-                                // Print the text field value to the console
-                                print(
-                                    'Search query: ${_searchController.text}');
+
+                                if (_searchController.text.isNotEmpty) {
+                                  BlocProvider.of<MapBloc>(context).add(
+                                    UserSearchedLocation(
+                                        _searchController.text),
+                                  );
+                                }
                               },
                               icon: const Icon(Icons.search),
                             ),

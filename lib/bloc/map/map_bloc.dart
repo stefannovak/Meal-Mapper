@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/review.dart';
@@ -12,6 +13,7 @@ part 'map_state.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   late ApiService _apiService;
+
   MapBloc(ApiService apiService) : super(MapInitial()) {
     _apiService = apiService;
 
@@ -20,6 +22,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<GetLocalPlaces>(_onGetLocalPlaces);
     on<FetchPlaceDetails>(_onFetchPlaceDetails);
     on<UserSubmittedReviewLocally>(_onUserSubmittedReviewLocally);
+    on<UserSearchedLocation>(_onUserSearchedLocation);
   }
 
   Future<void> _onGetCurrentLocation(
@@ -125,5 +128,18 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) async {
     emit(UpdateMapWithNewReview(event.review));
+  }
+
+  Future<void> _onUserSearchedLocation(
+    UserSearchedLocation event,
+    Emitter<MapState> emit,
+  ) async {
+    var response = await _apiService.googleTextSearch(event.query);
+
+    if (response.isSuccess &&
+        response.success != null &&
+        response.success?.results?.isNotEmpty == true) {
+      emit(FetchedSearchResponse(response.success!));
+    }
   }
 }

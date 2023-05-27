@@ -47,3 +47,9 @@ class UserSubmittedReviewLocally extends MapEvent {
 
   UserSubmittedReviewLocally(this.review);
 }
+
+class UserSearchedLocation extends MapEvent {
+  late String query;
+
+  UserSearchedLocation(this.query);
+}

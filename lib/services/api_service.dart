@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/result.dart';
@@ -46,6 +47,22 @@ class ApiService {
       var placeDetailsResponse = PlaceDetailsResponse.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>);
       return Result(success: placeDetailsResponse);
+    }
+    return Result(failure: "Crap");
+  }
+
+  Future<Result<GoogleTextSearchResponse, String>> googleTextSearch(
+      String query) async {
+    var url = "https://maps.googleapis.com/maps/api/place/textsearch/json?" +
+        "query=${Uri.encodeFull(query)}" +
+        "&key=$_googleApiKey";
+
+    var response = await _client.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var searchResponse = GoogleTextSearchResponse.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
+      return Result(success: searchResponse);
     }
     return Result(failure: "Crap");
   }
