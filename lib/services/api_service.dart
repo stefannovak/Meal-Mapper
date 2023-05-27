@@ -52,9 +52,14 @@ class ApiService {
   }
 
   Future<Result<GoogleTextSearchResponse, String>> googleTextSearch(
-      String query) async {
+    String query,
+    double latitude,
+    double longitude,
+  ) async {
     var url = "https://maps.googleapis.com/maps/api/place/textsearch/json?" +
         "query=${Uri.encodeFull(query)}" +
+        "&location=$latitude%2C$longitude" +
+        "&radius=10000" +
         "&key=$_googleApiKey";
 
     var response = await _client.get(Uri.parse(url));

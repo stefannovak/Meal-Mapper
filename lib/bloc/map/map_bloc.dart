@@ -134,7 +134,11 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     UserSearchedLocation event,
     Emitter<MapState> emit,
   ) async {
-    var response = await _apiService.googleTextSearch(event.query);
+    var response = await _apiService.googleTextSearch(
+      event.query,
+      event.latitude,
+      event.longitude,
+    );
 
     if (response.isSuccess &&
         response.success != null &&

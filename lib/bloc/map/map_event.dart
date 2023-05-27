@@ -50,6 +50,12 @@ class UserSubmittedReviewLocally extends MapEvent {
 
 class UserSearchedLocation extends MapEvent {
   late String query;
+  late double latitude;
+  late double longitude;
 
-  UserSearchedLocation(this.query);
+  UserSearchedLocation(
+    this.query,
+    this.latitude,
+    this.longitude,
+  );
 }

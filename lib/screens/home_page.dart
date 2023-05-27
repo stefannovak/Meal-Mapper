@@ -6,12 +6,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mealmapper/bloc/authentication/authentication_bloc.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
+import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
 import 'package:mealmapper/screens/detailed_bottom_sheet.dart';
 import 'package:mealmapper/screens/profile_screen.dart';
-import 'package:mealmapper/screens/search_response_bottom_sheet.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -97,19 +97,26 @@ class _MyHomePageState extends State<MyHomePage> {
           listener: (context, state) {},
           builder: (context, state) {
             if (state is FetchedSearchResponse) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                var future = showModalBottomSheet(
-                  backgroundColor: Colors.transparent,
-                  barrierColor: Colors.transparent,
-                  context: context,
-                  builder: (context) {
-                    return SearchResponseBottomSheet(
-                      results: state.response.results!,
-                    );
-                  },
+              for (var response in state.response.results!) {
+                markers.add(
+                  Marker(
+                    markerId: MarkerId(response.placeId ?? "-1"),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueMagenta),
+                    position: LatLng(
+                      response.geometry?.location?.lat ?? 0,
+                      response.geometry?.location?.lng ?? 0,
+                    ),
+                    infoWindow: InfoWindow(title: response.name),
+                  ),
                 );
-              });
+              }
+
+              return _userLatitude != null && _userLongitude != null
+                  ? _buildMap(_userLatitude!, _userLongitude!)
+                  : const Center(child: CircularProgressIndicator());
             }
+
             if (state is FetchedNearbyArea) {
               print("Fetched");
 
@@ -404,10 +411,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   }
                                 });
 
-                                if (_searchController.text.isNotEmpty) {
+                                if (_searchController.text.isNotEmpty &&
+                                    _userLatitude != null &&
+                                    _userLongitude != null) {
                                   BlocProvider.of<MapBloc>(context).add(
-                                    UserSearchedLocation(
-                                        _searchController.text),
+                                    UserSearchedLocation(_searchController.text,
+                                        _userLatitude!, _userLongitude!),
                                   );
                                 }
                               },
