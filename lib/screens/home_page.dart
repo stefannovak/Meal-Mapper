@@ -112,8 +112,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               }
 
+              //TODO: - Zoom map to location(s)
+
+              var future = _controller?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: LatLng(
+                        state.response.results![0].geometry?.location?.lat ??
+                            0.005 - 0.005,
+                        state.response.results![0].geometry?.location?.lng ??
+                            0),
+                    zoom: 16,
+                  ),
+                ),
+              );
+
               return _userLatitude != null && _userLongitude != null
-                  ? _buildMap(_userLatitude!, _userLongitude!)
+                  ? _buildMap(_userLatitude!, _userLongitude!, future: future)
                   : const Center(child: CircularProgressIndicator());
             }
 
@@ -142,7 +157,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )
                   .then((value) {
-                // ignore: use_build_context_synchronously
                 var future = showModalBottomSheet(
                   backgroundColor: Colors.transparent,
                   barrierColor: Colors.transparent,
@@ -314,7 +328,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildMap(double latitude, double longitude) {
+  Widget _buildMap(
+    double latitude,
+    double longitude, {
+    Future<void>? future,
+  }) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Meal Mapper"),
@@ -343,34 +361,29 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         child: Stack(
           children: [
-            GoogleMap(
-              mapType: MapType.hybrid,
-              myLocationEnabled: true,
-              initialCameraPosition: CameraPosition(
-                target: LatLng(latitude, longitude),
-                zoom: 16,
-              ),
-              onMapCreated: (controller) {
-                _controller = controller;
-              },
-              markers: markers,
-              onTap: (loc) async {
-                if (!_isSearchBarActive) {
-                  print("ONTAP");
-                  BlocProvider.of<MapBloc>(context).add(
-                    UserClickedMap(loc.latitude, loc.longitude),
-                  );
-                }
-              },
-              onLongPress: (loc) {
-                var marker = Marker(
-                  markerId: MarkerId(loc.latitude.toString()),
-                  position: LatLng(loc.latitude, loc.longitude),
-                  infoWindow: InfoWindow(title: "test"),
+            FutureBuilder(
+              future: future,
+              builder: (context, snapshot) {
+                return GoogleMap(
+                  mapType: MapType.hybrid,
+                  myLocationEnabled: true,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(latitude, longitude),
+                    zoom: 16,
+                  ),
+                  onMapCreated: (controller) {
+                    _controller = controller;
+                  },
+                  markers: markers,
+                  onTap: (loc) async {
+                    if (!_isSearchBarActive) {
+                      print("ONTAP");
+                      BlocProvider.of<MapBloc>(context).add(
+                        UserClickedMap(loc.latitude, loc.longitude),
+                      );
+                    }
+                  },
                 );
-                setState(() {
-                  markers.add(marker);
-                });
               },
             ),
             Positioned(
