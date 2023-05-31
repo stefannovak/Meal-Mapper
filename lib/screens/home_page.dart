@@ -108,11 +108,26 @@ class _MyHomePageState extends State<MyHomePage> {
                       response.geometry?.location?.lng ?? 0,
                     ),
                     infoWindow: InfoWindow(title: response.name),
+                    onTap: () async {
+                      await showModalBottomSheet(
+                        backgroundColor: Colors.transparent,
+                        barrierColor: Colors.transparent,
+                        context: context,
+                        builder: (context) {
+                          return DetailedBottomSheet(
+                            area: NearbySearchResponseResult(
+                              geometry: response.geometry!,
+                              placeId: response.placeId ?? "-1",
+                              name: response.name,
+                              rating: 4.1,
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 );
               }
-
-              //TODO: - Zoom map to location(s)
 
               var future = _controller?.animateCamera(
                 CameraUpdate.newCameraPosition(
@@ -335,7 +350,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Meal Mapper"),
+        title: const Text("Meal Mapper"),
         toolbarHeight: MediaQuery.of(context).size.height * 0.05,
         actions: [
           IconButton(
@@ -390,56 +405,74 @@ class _MyHomePageState extends State<MyHomePage> {
               left: 0,
               right: 0,
               bottom: 0,
-              child: AnimatedContainer(
-                padding: EdgeInsets.zero,
-                duration: Duration(milliseconds: 300),
-                height: 80,
-                child: Container(
+              child: GestureDetector(
+                onTap: () => _searchFocusNode.unfocus(),
+                child: AnimatedContainer(
                   padding: EdgeInsets.zero,
-                  color: Colors.white,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          focusNode: _searchFocusNode,
-                          onChanged: (value) {
-                            // Handle search text changes
-                          },
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.zero,
-                            hintText: 'Search',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isSearchBarActive = !_isSearchBarActive;
-                                  if (_isSearchBarActive) {
-                                    FocusScope.of(context)
-                                        .requestFocus(_searchFocusNode);
-                                  } else {
-                                    _searchFocusNode.unfocus();
-                                  }
-                                });
+                  duration: const Duration(milliseconds: 100),
+                  height: 80,
+                  child: Container(
+                    padding: EdgeInsets.zero,
+                    color: Colors.white,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            onEditingComplete: () {
+                              _searchFocusNode.unfocus();
 
-                                if (_searchController.text.isNotEmpty &&
-                                    _userLatitude != null &&
-                                    _userLongitude != null) {
-                                  BlocProvider.of<MapBloc>(context).add(
-                                    UserSearchedLocation(_searchController.text,
-                                        _userLatitude!, _userLongitude!),
-                                  );
-                                }
-                              },
-                              icon: const Icon(Icons.search),
+                              if (_searchController.text.isNotEmpty &&
+                                  _userLatitude != null &&
+                                  _userLongitude != null) {
+                                BlocProvider.of<MapBloc>(context).add(
+                                  UserSearchedLocation(
+                                    _searchController.text,
+                                    _userLatitude!,
+                                    _userLongitude!,
+                                  ),
+                                );
+                              }
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.zero,
+                              hintText: 'Search',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isSearchBarActive = !_isSearchBarActive;
+                                    if (_isSearchBarActive) {
+                                      FocusScope.of(context)
+                                          .requestFocus(_searchFocusNode);
+                                    } else {
+                                      _searchFocusNode.unfocus();
+                                    }
+                                  });
+
+                                  if (_searchController.text.isNotEmpty &&
+                                      _userLatitude != null &&
+                                      _userLongitude != null) {
+                                    BlocProvider.of<MapBloc>(context).add(
+                                      UserSearchedLocation(
+                                        _searchController.text,
+                                        _userLatitude!,
+                                        _userLongitude!,
+                                      ),
+                                    );
+                                  }
+                                },
+                                icon: const Icon(Icons.search),
+                              ),
                             ),
+                            style: const TextStyle(fontSize: 22),
                           ),
-                          style: const TextStyle(fontSize: 22),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
