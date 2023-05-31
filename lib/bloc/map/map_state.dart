@@ -60,3 +60,12 @@ class UpdateMapWithNewReview extends MapInitial {
   @override
   List<Object> get props => [review];
 }
+
+class FetchedSearchResponse extends MapInitial {
+  late GoogleTextSearchResponse response;
+
+  FetchedSearchResponse(this.response);
+
+  @override
+  List<Object> get props => [response];
+}

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/result.dart';
@@ -15,7 +16,7 @@ class ApiService {
   Future<Result<NearbySearchResponse, String>> getGoogleNearbySearch(
     double latitude,
     double longitude, {
-    int? radius = 10,
+    int? radius = 20,
   }) async {
     var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" +
         "location=$latitude%2C$longitude" +
@@ -46,6 +47,27 @@ class ApiService {
       var placeDetailsResponse = PlaceDetailsResponse.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>);
       return Result(success: placeDetailsResponse);
+    }
+    return Result(failure: "Crap");
+  }
+
+  Future<Result<GoogleTextSearchResponse, String>> googleTextSearch(
+    String query,
+    double latitude,
+    double longitude,
+  ) async {
+    var url = "https://maps.googleapis.com/maps/api/place/textsearch/json?" +
+        "query=${Uri.encodeFull(query)}" +
+        "&location=$latitude%2C$longitude" +
+        "&radius=10000" +
+        "&key=$_googleApiKey";
+
+    var response = await _client.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      var searchResponse = GoogleTextSearchResponse.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
+      return Result(success: searchResponse);
     }
     return Result(failure: "Crap");
   }

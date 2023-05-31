@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mealmapper/bloc/authentication/authentication_bloc.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
+import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
@@ -23,6 +24,9 @@ class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController? _controller;
   double? _userLatitude;
   double? _userLongitude;
+  bool _isSearchBarActive = false;
+  final TextEditingController _searchController = TextEditingController();
+  FocusNode _searchFocusNode = FocusNode();
 
   Set<Marker> markers = HashSet<Marker>();
 
@@ -56,11 +60,13 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             );
 
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const AuthenticationScreen(),
-              ),
-            );
+            if (mounted) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AuthenticationScreen(),
+                ),
+              );
+            }
           }
           if (state is FetchedUserSavedPins) {
             for (var review in state.reviews) {
@@ -90,16 +96,104 @@ class _MyHomePageState extends State<MyHomePage> {
         child: BlocConsumer<MapBloc, MapState>(
           listener: (context, state) {},
           builder: (context, state) {
+            if (state is FetchedSearchResponse) {
+              for (var response in state.response.results!) {
+                markers.add(
+                  Marker(
+                    markerId: MarkerId(response.placeId ?? "-1"),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                        BitmapDescriptor.hueMagenta),
+                    position: LatLng(
+                      response.geometry?.location?.lat ?? 0,
+                      response.geometry?.location?.lng ?? 0,
+                    ),
+                    infoWindow: InfoWindow(title: response.name),
+                    onTap: () async {
+                      await showModalBottomSheet(
+                        backgroundColor: Colors.transparent,
+                        barrierColor: Colors.transparent,
+                        context: context,
+                        builder: (context) {
+                          return DetailedBottomSheet(
+                            area: NearbySearchResponseResult(
+                              geometry: response.geometry!,
+                              placeId: response.placeId ?? "-1",
+                              name: response.name,
+                              rating: 4.1,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                );
+              }
+
+              var future = _controller?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: LatLng(
+                        state.response.results![0].geometry?.location?.lat ??
+                            0.005 - 0.005,
+                        state.response.results![0].geometry?.location?.lng ??
+                            0),
+                    zoom: 16,
+                  ),
+                ),
+              );
+
+              return _userLatitude != null && _userLongitude != null
+                  ? _buildMap(_userLatitude!, _userLongitude!, future: future)
+                  : const Center(child: CircularProgressIndicator());
+            }
+
             if (state is FetchedNearbyArea) {
               print("Fetched");
-              state.nearbySearchResponse.results?.forEach((area) {
-                var markerExists =
-                    markers.any((x) => x.markerId.value == area.placeId);
-                if (!markerExists) {
-                  markers.add(
-                    _createLocalMarker(area, context),
+
+              var area = state.nearbySearchResponse.results!.first;
+
+              // TODO: - Future problem, clicked near the marker shows an unreviewed version of that marker.
+              // try {
+              //   var existingMarker = markers.firstWhere(
+              //     (x) => x.markerId.value == area.placeId,
+              //   );
+              // } catch (e) {}
+
+              _controller
+                  ?.animateCamera(
+                CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                    target: LatLng(
+                      area.geometry.location.lat - 0.005,
+                      area.geometry.location.lng,
+                    ),
+                    zoom: 16,
+                  ),
+                ),
+              )
+                  .then((value) {
+                var future = showModalBottomSheet(
+                  backgroundColor: Colors.transparent,
+                  barrierColor: Colors.transparent,
+                  context: context,
+                  builder: (context) {
+                    return DetailedBottomSheet(area: area);
+                  },
+                );
+
+                future.then((value) async {
+                  await _controller?.animateCamera(
+                    CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                        target: LatLng(
+                          area.geometry.location.lat,
+                          area.geometry.location.lng,
+                        ),
+                        zoom: await _controller?.getZoomLevel() ?? 16,
+                      ),
+                    ),
                   );
-                }
+                });
               });
 
               return _userLatitude != null && _userLongitude != null
@@ -114,14 +208,18 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             if (state is UpdateMapWithNewReview) {
-              var existingMarker = markers.firstWhere(
-                (x) => x.markerId.value == state.review.area.placeId,
-              );
-
-              markers.remove(existingMarker);
               markers.add(
                 _createSavedMarker(state.review, context),
               );
+
+              // var existingMarker = markers.firstWhere(
+              //   (x) => x.markerId.value == state.review.area.placeId,
+              // );
+
+              // markers.remove(existingMarker);
+              // markers.add(
+              //   _createSavedMarker(state.review, context),
+              // );
 
               return _userLatitude != null && _userLongitude != null
                   ? _buildMap(_userLatitude!, _userLongitude!)
@@ -245,48 +343,142 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildMap(double latitude, double longitude) {
+  Widget _buildMap(
+    double latitude,
+    double longitude, {
+    Future<void>? future,
+  }) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Meal Mapper"),
+        title: const Text("Meal Mapper"),
         toolbarHeight: MediaQuery.of(context).size.height * 0.05,
         actions: [
           IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.person)),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.person),
+          ),
         ],
       ),
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        myLocationEnabled: true,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(latitude, longitude),
-          zoom: 16,
+      body: GestureDetector(
+        onTap: () {
+          if (_isSearchBarActive) {
+            setState(() {
+              _isSearchBarActive = false;
+              FocusScope.of(context).requestFocus(FocusNode());
+            });
+          }
+        },
+        child: Stack(
+          children: [
+            FutureBuilder(
+              future: future,
+              builder: (context, snapshot) {
+                return GoogleMap(
+                  mapType: MapType.hybrid,
+                  myLocationEnabled: true,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(latitude, longitude),
+                    zoom: 16,
+                  ),
+                  onMapCreated: (controller) {
+                    _controller = controller;
+                  },
+                  markers: markers,
+                  onTap: (loc) async {
+                    if (!_isSearchBarActive) {
+                      print("ONTAP");
+                      BlocProvider.of<MapBloc>(context).add(
+                        UserClickedMap(loc.latitude, loc.longitude),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: () => _searchFocusNode.unfocus(),
+                child: AnimatedContainer(
+                  padding: EdgeInsets.zero,
+                  duration: const Duration(milliseconds: 100),
+                  height: 80,
+                  child: Container(
+                    padding: EdgeInsets.zero,
+                    color: Colors.white,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            onEditingComplete: () {
+                              _searchFocusNode.unfocus();
+
+                              if (_searchController.text.isNotEmpty &&
+                                  _userLatitude != null &&
+                                  _userLongitude != null) {
+                                BlocProvider.of<MapBloc>(context).add(
+                                  UserSearchedLocation(
+                                    _searchController.text,
+                                    _userLatitude!,
+                                    _userLongitude!,
+                                  ),
+                                );
+                              }
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.zero,
+                              hintText: 'Search',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isSearchBarActive = !_isSearchBarActive;
+                                    if (_isSearchBarActive) {
+                                      FocusScope.of(context)
+                                          .requestFocus(_searchFocusNode);
+                                    } else {
+                                      _searchFocusNode.unfocus();
+                                    }
+                                  });
+
+                                  if (_searchController.text.isNotEmpty &&
+                                      _userLatitude != null &&
+                                      _userLongitude != null) {
+                                    BlocProvider.of<MapBloc>(context).add(
+                                      UserSearchedLocation(
+                                        _searchController.text,
+                                        _userLatitude!,
+                                        _userLongitude!,
+                                      ),
+                                    );
+                                  }
+                                },
+                                icon: const Icon(Icons.search),
+                              ),
+                            ),
+                            style: const TextStyle(fontSize: 22),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        onMapCreated: (controller) {
-          _controller = controller;
-        },
-        markers: markers,
-        onTap: (loc) async {
-          BlocProvider.of<MapBloc>(context)
-              .add(UserClickedMap(loc.latitude, loc.longitude));
-        },
-        onLongPress: (loc) {
-          var marker = Marker(
-            markerId: MarkerId(loc.latitude.toString()),
-            position: LatLng(loc.latitude, loc.longitude),
-            infoWindow: InfoWindow(title: "test"),
-          );
-          setState(() {
-            markers.add(marker);
-          });
-        },
       ),
     );
   }

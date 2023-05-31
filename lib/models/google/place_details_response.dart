@@ -1,3 +1,5 @@
+import 'nearby_search_response.dart';
+
 class PlaceDetailsResponse {
   PlaceDetailsResponseResult? result;
   String? status;
@@ -178,33 +180,6 @@ class AddressComponents {
     data['long_name'] = this.longName;
     data['short_name'] = this.shortName;
     data['types'] = this.types;
-    return data;
-  }
-}
-
-class Geometry {
-  Location? location;
-  Viewport? viewport;
-
-  Geometry({this.location, this.viewport});
-
-  Geometry.fromJson(Map<String, dynamic> json) {
-    location = json['location'] != null
-        ? new Location.fromJson(json['location'])
-        : null;
-    viewport = json['viewport'] != null
-        ? new Viewport.fromJson(json['viewport'])
-        : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.location != null) {
-      data['location'] = this.location!.toJson();
-    }
-    if (this.viewport != null) {
-      data['viewport'] = this.viewport!.toJson();
-    }
     return data;
   }
 }

@@ -3,6 +3,9 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mealmapper/bloc/authentication/authentication_bloc.dart';
+import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
+import 'package:mealmapper/bloc/map/map_bloc.dart';
+import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,6 +16,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

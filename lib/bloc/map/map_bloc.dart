@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/review.dart';
@@ -12,6 +13,7 @@ part 'map_state.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   late ApiService _apiService;
+
   MapBloc(ApiService apiService) : super(MapInitial()) {
     _apiService = apiService;
 
@@ -20,6 +22,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<GetLocalPlaces>(_onGetLocalPlaces);
     on<FetchPlaceDetails>(_onFetchPlaceDetails);
     on<UserSubmittedReviewLocally>(_onUserSubmittedReviewLocally);
+    on<UserSearchedLocation>(_onUserSearchedLocation);
   }
 
   Future<void> _onGetCurrentLocation(
@@ -61,15 +64,15 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     // continue accessing the position of the device.
     var position = await Geolocator.getCurrentPosition();
     emit(FetchedLocation(position.latitude, position.longitude));
-    var response = await _apiService.getGoogleNearbySearch(
-      position.latitude,
-      position.longitude,
-      radius: 800,
-    );
+    // var response = await _apiService.getGoogleNearbySearch(
+    //   position.latitude,
+    //   position.longitude,
+    //   radius: 800,
+    // );
 
-    if (response.isSuccess && response.success != null) {
-      emit(FetchedNearbyArea(response.success!));
-    }
+    // if (response.isSuccess && response.success != null) {
+    //   emit(FetchedNearbyArea(response.success!));
+    // }
   }
 
   Future<void> _onUserClickedMap(
@@ -81,9 +84,14 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       event._longitude,
     );
 
-    if (response.isSuccess && response.success != null) {
+    if (response.isSuccess &&
+        response.success != null &&
+        response.success?.results?.isNotEmpty == true) {
       emit(FetchedNearbyArea(response.success!));
+      return;
     }
+
+    print("getGoogleNearbySearch was empty");
   }
 
   Future<void> _onGetLocalPlaces(
@@ -120,5 +128,22 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     Emitter<MapState> emit,
   ) async {
     emit(UpdateMapWithNewReview(event.review));
+  }
+
+  Future<void> _onUserSearchedLocation(
+    UserSearchedLocation event,
+    Emitter<MapState> emit,
+  ) async {
+    var response = await _apiService.googleTextSearch(
+      event.query,
+      event.latitude,
+      event.longitude,
+    );
+
+    if (response.isSuccess &&
+        response.success != null &&
+        response.success?.results?.isNotEmpty == true) {
+      emit(FetchedSearchResponse(response.success!));
+    }
   }
 }
