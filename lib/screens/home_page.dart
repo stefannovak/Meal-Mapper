@@ -26,7 +26,8 @@ class _MyHomePageState extends State<MyHomePage> {
   double? _userLongitude;
   bool _isSearchBarActive = false;
   final TextEditingController _searchController = TextEditingController();
-  FocusNode _searchFocusNode = FocusNode();
+  final FocusNode _searchFocusNode = FocusNode();
+  List<Review>? reviews;
 
   Set<Marker> markers = HashSet<Marker>();
 
@@ -69,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           }
           if (state is FetchedUserSavedPins) {
+            reviews = state.reviews;
             for (var review in state.reviews) {
               var existingMarker = markers.firstWhere(
                 (x) => x.markerId.value == review.area.placeId,
@@ -357,7 +359,7 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
+                  builder: (context) => ProfileScreen(reviews: reviews),
                 ),
               );
             },

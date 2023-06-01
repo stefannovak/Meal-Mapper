@@ -9,7 +9,9 @@ import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  List<Review>? reviews;
+
+  ProfileScreen({super.key, this.reviews});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -34,18 +36,98 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: const Icon(Icons.arrow_back),
         ),
       ),
-      body: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.all(Radius.circular(25))),
-            child: GestureDetector(
-              onTap: () {
+      body: ListView(
+          children: widget.reviews != null
+              ? withReviewWidgets(widget.reviews!)
+              : noReviewWidgets()),
+    );
+  }
+
+  List<Widget> withReviewWidgets(List<Review> reviews) {
+    var reviewWidgets = <Widget>[
+      const Text(
+        "My pins",
+        style: TextStyle(
+          fontSize: 32,
+        ),
+      ),
+    ];
+
+    var reviewTiles = reviews.map<ListTile>(
+      (e) => ListTile(
+        title: Text(
+          e.area.name ?? "A mystery",
+        ),
+      ),
+    );
+
+    if (reviewTiles.length > 3) {
+      reviewWidgets.addAll(reviewTiles.take(3));
+      reviewWidgets
+          .add(ElevatedButton(onPressed: () {}, child: Text("Show more...")));
+    } else {
+      reviewWidgets.addAll(reviewTiles);
+    }
+
+    reviewWidgets.addAll(noReviewWidgets());
+    return reviewWidgets;
+  }
+
+  List<Widget> noReviewWidgets() {
+    return [
+      ElevatedButton(
+        onPressed: () {
+          BlocProvider.of<AuthenticationBloc>(context).add(UserSignedOut());
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const AuthenticationScreen(),
+            ),
+            (Route<dynamic> route) => false,
+          );
+        },
+        child: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text("Sign out", style: TextStyle(fontSize: 48)),
+        ),
+      ),
+      const SizedBox(height: 24),
+      ElevatedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+            (Set<MaterialState> states) {
+              return Colors.red; // Use the component's default.
+            },
+          ),
+        ),
+        onPressed: () => onDeleteAccountTapped,
+        child: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text("Delete Account", style: TextStyle(fontSize: 24)),
+        ),
+      ),
+    ];
+  }
+
+  Future onDeleteAccountTapped() {
+    return showDialog(
+      context: context,
+      builder: (builder) {
+        return AlertDialog(
+          title: Text("Are you sure?"),
+          content:
+              Text('Deleting your account will permanently erase everything.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
                 BlocProvider.of<AuthenticationBloc>(context)
-                    .add(UserSignedOut());
+                    .add(UserDeletedAccount());
 
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
@@ -54,61 +136,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   (Route<dynamic> route) => false,
                 );
               },
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text("Sign out", style: TextStyle(fontSize: 48)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            decoration: const BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.all(Radius.circular(25))),
-            child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (builder) {
-                    return AlertDialog(
-                      title: Text("Are you sure?"),
-                      content: Text(
-                          'Deleting your account will permanently erase everything.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('No'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            BlocProvider.of<AuthenticationBloc>(context)
-                                .add(UserDeletedAccount());
-
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const AuthenticationScreen(),
-                              ),
-                              (Route<dynamic> route) => false,
-                            );
-                          },
-                          child: Text('Yes'),
-                        )
-                      ],
-                    );
-                  },
-                );
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text("Delete Account", style: TextStyle(fontSize: 48)),
-              ),
-            ),
-          ),
-        ],
-      )),
+              child: Text('Yes'),
+            )
+          ],
+        );
+      },
     );
   }
 }
