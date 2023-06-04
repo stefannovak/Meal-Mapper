@@ -16,10 +16,13 @@ part 'firebase_event.dart';
 part 'firebase_state.dart';
 
 class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
-  FirebaseBloc() : super(FirebaseInitial()) {
+  final FirebaseAuth auth;
+
+  FirebaseBloc({required this.auth}) : super(FirebaseInitial()) {
     on<UserSubmittedReview>(_onUserSubmittedReview);
     on<GetUserPinsOnLoad>(_onGetUserPinsOnLoad);
     on<GetReviewImages>(_onGetReviewImages);
+    on<UserSentFriendRequest>(_onUserSentFriendRequest);
   }
 
   Future<void> _onUserSubmittedReview(
@@ -123,5 +126,12 @@ class FirebaseBloc extends Bloc<FirebaseEvent, FirebaseState> {
     }
 
     emit(FetchedReviewImages(imagesMemory));
+  }
+
+  Future<void> _onUserSentFriendRequest(
+    UserSentFriendRequest event,
+    Emitter<FirebaseState> emit,
+  ) async {
+    emit(FirebaseGenericSuccess());
   }
 }

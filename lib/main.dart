@@ -27,6 +27,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late Client httpClient;
   late ApiService apiService;
+  late FirebaseAuth auth;
   bool _isUserSignedIn = false;
 
   @override
@@ -34,7 +35,8 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     httpClient = Client();
     apiService = ApiService(httpClient);
-    _isUserSignedIn = FirebaseAuth.instance.currentUser != null;
+    auth = FirebaseAuth.instance;
+    _isUserSignedIn = auth.currentUser != null;
   }
 
   // This widget is the root of your application.
@@ -43,9 +45,10 @@ class _MyAppState extends State<MyApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<MapBloc>(create: (context) => MapBloc(apiService)),
-        BlocProvider<FirebaseBloc>(create: (context) => FirebaseBloc()),
+        BlocProvider<FirebaseBloc>(
+            create: (context) => FirebaseBloc(auth: auth)),
         BlocProvider<AuthenticationBloc>(
-            create: (context) => AuthenticationBloc()),
+            create: (context) => AuthenticationBloc(auth: auth)),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

@@ -26,3 +26,9 @@ class GetReviewImages extends FirebaseEvent {
   @override
   List<Object> get props => [];
 }
+
+class UserSentFriendRequest extends FirebaseEvent {
+  late String email;
+
+  UserSentFriendRequest(this.email);
+}

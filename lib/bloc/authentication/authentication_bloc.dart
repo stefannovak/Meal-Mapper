@@ -8,9 +8,9 @@ part 'authentication_state.dart';
 
 class AuthenticationBloc
     extends Bloc<AuthenticationEvent, AuthenticationState> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth auth;
 
-  AuthenticationBloc() : super(AuthenticationInitial()) {
+  AuthenticationBloc({required this.auth}) : super(AuthenticationInitial()) {
     on<UserCreatedAccount>(_onUserCreatedAccount);
     on<UserLoggedIn>(_onUserLoggedIn);
     on<UserSignedOut>(_onUserSignedOut);

@@ -8,6 +8,10 @@ import 'package:mealmapper/bloc/map/map_bloc.dart';
 import 'package:mealmapper/models/review.dart';
 import 'package:mealmapper/screens/authentication_screen.dart';
 
+// Global
+bool joeIsPendingRequest = true;
+bool samIsPendingRequest = true;
+
 class ProfileScreen extends StatefulWidget {
   List<Review>? reviews;
 
@@ -93,6 +97,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   List<Widget> noReviewWidgets() {
     return [
+      const Text(
+        "Friends",
+        style: TextStyle(
+          fontSize: 32,
+        ),
+      ),
+      createFriendTile(),
+      const SizedBox(height: 24),
       ElevatedButton(
         onPressed: () {
           BlocProvider.of<AuthenticationBloc>(context).add(UserSignedOut());
@@ -125,6 +137,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     ];
+  }
+
+  ListTile createFriendTile() {
+    return ListTile(
+      title: const Text(
+        "Joe Smith",
+        style: TextStyle(
+          fontSize: 18,
+        ),
+      ),
+      subtitle: Text(
+          joeIsPendingRequest ? "Wants to be your friend!" : "Share reviews!"),
+      onTap: () async {
+        if (joeIsPendingRequest) {
+          await showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title:
+                      const Text("Do you want to accept this friend request?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          joeIsPendingRequest = false;
+                          Navigator.pop(context);
+                        });
+                      },
+                      child: const Text("Yes"),
+                    ),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text(
+                        "No",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    )
+                  ],
+                );
+              });
+        }
+      },
+    );
   }
 
   Future onDeleteAccountTapped() {
