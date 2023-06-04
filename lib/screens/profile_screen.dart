@@ -18,8 +18,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  int showingReviews = 0;
+
   @override
   void initState() {
+    showingReviews = widget.reviews != null ? 5 : 0;
     super.initState();
   }
 
@@ -38,12 +41,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: ListView(
           children: widget.reviews != null
-              ? withReviewWidgets(widget.reviews!)
+              ? withReviewWidgets(widget.reviews!, showingReviews)
               : noReviewWidgets()),
     );
   }
 
-  List<Widget> withReviewWidgets(List<Review> reviews) {
+  List<Widget> withReviewWidgets(
+    List<Review> reviews,
+    int amountOfReviewsToShow,
+  ) {
     var reviewWidgets = <Widget>[
       const Text(
         "My pins",
@@ -53,20 +59,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     ];
 
-    var reviewTiles = reviews.map<ListTile>(
-      (e) => ListTile(
-        title: Text(
-          e.area.name ?? "A mystery",
-        ),
-      ),
-    );
+    var reviewTiles = reviews
+        .take(amountOfReviewsToShow)
+        .map<ListTile>(
+          (e) => ListTile(
+            title: Text(
+              e.area.name ?? "A mystery",
+            ),
+            subtitle: Text(e.area.vicinity ?? ""),
+            trailing: Text(e.rating.toString()),
+          ),
+        )
+        .toList();
 
-    if (reviewTiles.length > 3) {
-      reviewWidgets.addAll(reviewTiles.take(3));
-      reviewWidgets
-          .add(ElevatedButton(onPressed: () {}, child: Text("Show more...")));
-    } else {
-      reviewWidgets.addAll(reviewTiles);
+    reviewWidgets.addAll(reviewTiles);
+
+    if (!(showingReviews >= reviews.length)) {
+      reviewWidgets.add(
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              showingReviews += 5;
+            });
+          },
+          child: const Text("Show more..."),
+        ),
+      );
     }
 
     reviewWidgets.addAll(noReviewWidgets());
