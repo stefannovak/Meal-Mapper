@@ -11,6 +11,8 @@ import 'package:mealmapper/screens/authentication_screen.dart';
 // Global
 bool joeIsPendingRequest = true;
 bool samIsPendingRequest = true;
+bool hasSharedJoeReviews = false;
+bool hasSharedSamReviews = false;
 
 class ProfileScreen extends StatefulWidget {
   List<Review>? reviews;
@@ -103,7 +105,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fontSize: 32,
         ),
       ),
-      createFriendTile(),
+      createJoeFriendTile(),
+      createSamFriendTile(),
       const SizedBox(height: 24),
       ElevatedButton(
         onPressed: () {
@@ -139,7 +142,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ];
   }
 
-  ListTile createFriendTile() {
+  ListTile createSamFriendTile() {
+    return ListTile(
+      title: const Text(
+        "Sam Butcher",
+        style: TextStyle(
+          fontSize: 18,
+        ),
+      ),
+      subtitle: Text(samIsPendingRequest
+          ? "Wants to be your friend!"
+          : hasSharedSamReviews
+              ? "Reviews shared"
+              : "Share reviews!"),
+      onTap: () async {
+        if (samIsPendingRequest) {
+          await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Do you want to accept this friend request?"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "No",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        samIsPendingRequest = false;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Yes"),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        if (!hasSharedSamReviews && mounted) {
+          await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title:
+                    const Text("Do you want to share your reviews with Sam?"),
+                content: const Text(
+                    "Sharing your reviews will allow you and Sam to see each others reviews on your maps. They will show up as green markers."),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "No",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        hasSharedSamReviews = true;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Yes"),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  ListTile createJoeFriendTile() {
     return ListTile(
       title: const Text(
         "Joe Smith",
@@ -147,36 +232,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fontSize: 18,
         ),
       ),
-      subtitle: Text(
-          joeIsPendingRequest ? "Wants to be your friend!" : "Share reviews!"),
+      subtitle: Text(joeIsPendingRequest
+          ? "Wants to be your friend!"
+          : hasSharedJoeReviews
+              ? "Reviews shared"
+              : "Share reviews!"),
       onTap: () async {
         if (joeIsPendingRequest) {
           await showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title:
-                      const Text("Do you want to accept this friend request?"),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          joeIsPendingRequest = false;
-                          Navigator.pop(context);
-                        });
-                      },
-                      child: const Text("Yes"),
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Do you want to accept this friend request?"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "No",
+                      style: TextStyle(color: Colors.red),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        "No",
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    )
-                  ],
-                );
-              });
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        joeIsPendingRequest = false;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Yes"),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+
+        if (!hasSharedSamReviews && mounted) {
+          await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title:
+                    const Text("Do you want to share your reviews with Joe?"),
+                content: const Text(
+                    "Sharing your reviews will allow you and Joe to see each others reviews on your maps. They will show up as green markers."),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "No",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        hasSharedJoeReviews = true;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Yes"),
+                  ),
+                ],
+              );
+            },
+          );
         }
       },
     );
