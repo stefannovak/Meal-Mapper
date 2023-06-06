@@ -59,3 +59,5 @@ class UserSearchedLocation extends MapEvent {
     this.longitude,
   );
 }
+
+class GetFriendReviews extends MapEvent {}

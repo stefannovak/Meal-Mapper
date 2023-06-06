@@ -195,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title:
                     const Text("Do you want to share your reviews with Sam?"),
                 content: const Text(
-                    "Sharing your reviews will allow you and Sam to see each others reviews on your maps. They will show up as green markers."),
+                    "Sharing your reviews will allow you and Sam to see each others reviews on your maps. They will show up as orange markers."),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -277,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title:
                     const Text("Do you want to share your reviews with Joe?"),
                 content: const Text(
-                    "Sharing your reviews will allow you and Joe to see each others reviews on your maps. They will show up as green markers."),
+                    "Sharing your reviews will allow you and Joe to see each others reviews on your maps. They will show up as orange markers."),
                 actions: [
                   TextButton(
                     onPressed: () {

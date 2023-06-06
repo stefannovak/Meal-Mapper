@@ -35,7 +35,7 @@ class FetchedLocation extends MapInitial {
 }
 
 class FetchedNearbyArea extends MapInitial {
-  late NearbySearchResponse nearbySearchResponse;
+  late NearbySearchResponse.NearbySearchResponse nearbySearchResponse;
 
   FetchedNearbyArea(this.nearbySearchResponse);
 
@@ -68,4 +68,10 @@ class FetchedSearchResponse extends MapInitial {
 
   @override
   List<Object> get props => [response];
+}
+
+class FetchedFriendReviews extends MapInitial {
+  final List<Review> friendReviews;
+
+  FetchedFriendReviews(this.friendReviews);
 }

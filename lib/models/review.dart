@@ -1,4 +1,3 @@
-import 'package:image_picker/image_picker.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/review_image.dart';
 

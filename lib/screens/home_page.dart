@@ -40,6 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    BlocProvider.of<MapBloc>(context).add(GetFriendReviews());
+
     return Scaffold(
       body: BlocListener<FirebaseBloc, FirebaseState>(
         listener: (context, state) async {
@@ -150,16 +152,9 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             if (state is FetchedNearbyArea) {
-              print("Fetched");
-
               var area = state.nearbySearchResponse.results!.first;
 
               // TODO: - Future problem, clicked near the marker shows an unreviewed version of that marker.
-              // try {
-              //   var existingMarker = markers.firstWhere(
-              //     (x) => x.markerId.value == area.placeId,
-              //   );
-              // } catch (e) {}
 
               _controller
                   ?.animateCamera(
@@ -210,18 +205,23 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             if (state is UpdateMapWithNewReview) {
-              markers.add(
-                _createSavedMarker(state.review, context),
-              );
+              markers.add(_createSavedMarker(state.review, context));
 
-              // var existingMarker = markers.firstWhere(
-              //   (x) => x.markerId.value == state.review.area.placeId,
-              // );
+              return _userLatitude != null && _userLongitude != null
+                  ? _buildMap(_userLatitude!, _userLongitude!)
+                  : const Center(child: CircularProgressIndicator());
+            }
 
-              // markers.remove(existingMarker);
-              // markers.add(
-              //   _createSavedMarker(state.review, context),
-              // );
+            if (state is FetchedFriendReviews) {
+              for (var review in state.friendReviews) {
+                markers.add(
+                  _createSavedMarker(
+                    review,
+                    context,
+                    isFriendMarker: true,
+                  ),
+                );
+              }
 
               return _userLatitude != null && _userLongitude != null
                   ? _buildMap(_userLatitude!, _userLongitude!)
@@ -239,64 +239,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //SECTION - Private Methods
 
-  Marker _createLocalMarker(
-    NearbySearchResponseResult area,
-    BuildContext context,
-  ) {
-    return Marker(
-      markerId: MarkerId(area.placeId),
-      position: LatLng(
-        area.geometry.location.lat,
-        area.geometry.location.lng,
-      ),
-      infoWindow: InfoWindow(title: area.name),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-      onTap: () async {
-        await _controller?.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(
-                area.geometry.location.lat - 0.005,
-                area.geometry.location.lng,
-              ),
-              zoom: await _controller?.getZoomLevel() ?? 16,
-            ),
-          ),
-        );
-
-        // ignore: use_build_context_synchronously
-        var future = showModalBottomSheet(
-          backgroundColor: Colors.transparent,
-          barrierColor: Colors.transparent,
-          context: context,
-          builder: (context) {
-            return DetailedBottomSheet(area: area);
-          },
-        );
-
-        future.then((value) async {
-          await _controller?.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(
-                  area.geometry.location.lat,
-                  area.geometry.location.lng,
-                ),
-                zoom: await _controller?.getZoomLevel() ?? 16,
-              ),
-            ),
-          );
-
-          print(value);
-        });
-      },
-    );
-  }
-
   Marker _createSavedMarker(
     Review review,
-    BuildContext context,
-  ) {
+    BuildContext context, {
+    bool isFriendMarker = false,
+  }) {
     return Marker(
       markerId: MarkerId(review.area.placeId),
       position: LatLng(
@@ -304,7 +251,9 @@ class _MyHomePageState extends State<MyHomePage> {
         review.area.geometry.location.lng,
       ),
       infoWindow: InfoWindow(title: review.area.name),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      icon: BitmapDescriptor.defaultMarkerWithHue(
+        isFriendMarker ? BitmapDescriptor.hueOrange : BitmapDescriptor.hueGreen,
+      ),
       onTap: () async {
         await _controller?.animateCamera(
           CameraUpdate.newCameraPosition(

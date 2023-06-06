@@ -10,7 +10,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mealmapper/firebase_options.dart';
+import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/review.dart';
+import 'package:mealmapper/screens/profile_screen.dart';
 
 part 'firebase_event.dart';
 part 'firebase_state.dart';

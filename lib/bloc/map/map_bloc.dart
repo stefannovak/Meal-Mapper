@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mealmapper/models/google/google_text_search_response.dart';
-import 'package:mealmapper/models/google/nearby_search_response.dart';
+import 'package:mealmapper/models/google/nearby_search_response.dart'
+    as NearbySearchResponse;
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/review.dart';
+import 'package:mealmapper/screens/profile_screen.dart';
 import 'package:mealmapper/services/api_service.dart';
 
 part 'map_event.dart';
@@ -23,6 +28,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<FetchPlaceDetails>(_onFetchPlaceDetails);
     on<UserSubmittedReviewLocally>(_onUserSubmittedReviewLocally);
     on<UserSearchedLocation>(_onUserSearchedLocation);
+    on<GetFriendReviews>(_onGetFriendReviews);
   }
 
   Future<void> _onGetCurrentLocation(
@@ -63,6 +69,16 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     var position = await Geolocator.getCurrentPosition();
+    var deviceInfo = DeviceInfoPlugin();
+
+    if (Platform.isIOS) {
+      var iosInfo = await deviceInfo.iosInfo;
+      if (!iosInfo.isPhysicalDevice) {
+        // Manchester
+        emit(FetchedLocation(53.4808, -2.2426));
+        return;
+      }
+    }
     emit(FetchedLocation(position.latitude, position.longitude));
     // var response = await _apiService.getGoogleNearbySearch(
     //   position.latitude,
@@ -144,6 +160,80 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         response.success != null &&
         response.success?.results?.isNotEmpty == true) {
       emit(FetchedSearchResponse(response.success!));
+    }
+  }
+
+  Future<void> _onGetFriendReviews(
+    GetFriendReviews event,
+    Emitter<MapState> emit,
+  ) async {
+    if (hasSharedJoeReviews) {
+      var joeReviews = <Review>[];
+      joeReviews.add(
+        Review(
+          3.5,
+          "Not that great, dry chicken.",
+          NearbySearchResponse.NearbySearchResponseResult(
+            placeId: "ChIJQ7AC_Oaxe0gRab0Qb9UBehA",
+            geometry: NearbySearchResponse.Geometry(
+              location: NearbySearchResponse.Location(
+                lat: 53.47420509999999,
+                lng: -2.2551638,
+              ),
+            ),
+            name: "Dukes 92",
+            rating: 4.2,
+            vicinity: "18 - 25 Castle Street, Manchester",
+          ),
+          [],
+        ),
+      );
+
+      joeReviews.add(
+        Review(
+          4.5,
+          "Delicious. Try the sushi.",
+          NearbySearchResponse.NearbySearchResponseResult(
+            placeId: "ChIJiZERb-exe0gRT_t-z0KOJxk",
+            geometry: NearbySearchResponse.Geometry(
+              location: NearbySearchResponse.Location(
+                lat: 53.4765598,
+                lng: -2.2557022,
+              ),
+            ),
+            name: "Sapporo Teppanyaki Manchester",
+            rating: 4.5,
+            vicinity: "91-93 Liverpool Road, Manchester",
+          ),
+          [],
+        ),
+      );
+      emit(FetchedFriendReviews(joeReviews));
+    }
+
+    if (hasSharedSamReviews) {
+      var samReviews = <Review>[];
+      samReviews.add(
+        Review(
+          3.0,
+          "Pretty average, not worth the price.",
+          NearbySearchResponse.NearbySearchResponseResult(
+            placeId: "ChIJiZERb-exe0gRT_t-z0KOJxk",
+            geometry: NearbySearchResponse.Geometry(
+              location: NearbySearchResponse.Location(
+                lat: 53.4796873,
+                lng: -2.2532964,
+              ),
+            ),
+            name: "Tattu",
+            rating: 4.4,
+            vicinity: "3 Hardman Square, Gartside Street, Manchester",
+          ),
+          [],
+        ),
+      );
+
+      emit(FetchedFriendReviews(samReviews));
     }
   }
 }
