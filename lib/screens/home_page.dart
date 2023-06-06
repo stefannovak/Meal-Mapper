@@ -108,8 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     icon: BitmapDescriptor.defaultMarkerWithHue(
                         BitmapDescriptor.hueMagenta),
                     position: LatLng(
-                      response.geometry?.location?.lat ?? 0,
-                      response.geometry?.location?.lng ?? 0,
+                      response.geometry?.location.lat ?? 0,
+                      response.geometry?.location.lng ?? 0,
                     ),
                     infoWindow: InfoWindow(title: response.name),
                     onTap: () async {
@@ -137,10 +137,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
                     target: LatLng(
-                        state.response.results![0].geometry?.location?.lat ??
+                        state.response.results![0].geometry?.location.lat ??
                             0.005 - 0.005,
-                        state.response.results![0].geometry?.location?.lng ??
-                            0),
+                        state.response.results![0].geometry?.location.lng ?? 0),
                     zoom: 16,
                   ),
                 ),
