@@ -213,12 +213,12 @@ class _MyHomePageState extends State<MyHomePage> {
             }
 
             if (state is FetchedFriendReviews) {
-              for (var review in state.friendReviews) {
+              for (var review in state.friendReviews.reviews) {
                 markers.add(
                   _createSavedMarker(
                     review,
                     context,
-                    isFriendMarker: true,
+                    friendName: state.friendReviews.friendName,
                   ),
                 );
               }
@@ -242,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Marker _createSavedMarker(
     Review review,
     BuildContext context, {
-    bool isFriendMarker = false,
+    String? friendName,
   }) {
     return Marker(
       markerId: MarkerId(review.area.placeId),
@@ -252,7 +252,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       infoWindow: InfoWindow(title: review.area.name),
       icon: BitmapDescriptor.defaultMarkerWithHue(
-        isFriendMarker ? BitmapDescriptor.hueOrange : BitmapDescriptor.hueGreen,
+        friendName?.isNotEmpty == true
+            ? BitmapDescriptor.hueOrange
+            : BitmapDescriptor.hueGreen,
       ),
       onTap: () async {
         await _controller?.animateCamera(
@@ -273,7 +275,16 @@ class _MyHomePageState extends State<MyHomePage> {
           barrierColor: Colors.transparent,
           context: context,
           builder: (context) {
-            return DetailedBottomSheet(area: review.area, review: review);
+            return friendName?.isNotEmpty == true
+                ? DetailedBottomSheet(
+                    area: review.area,
+                    review: review,
+                    friendName: friendName,
+                  )
+                : DetailedBottomSheet(
+                    area: review.area,
+                    review: review,
+                  );
           },
         );
 

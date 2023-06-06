@@ -5,6 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mealmapper/models/friend_reviews.dart';
 import 'package:mealmapper/models/google/google_text_search_response.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart'
     as NearbySearchResponse;
@@ -208,7 +209,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           [],
         ),
       );
-      emit(FetchedFriendReviews(joeReviews));
+      emit(FetchedFriendReviews(FriendReviews(joeReviews, "Joe")));
     }
 
     if (hasSharedSamReviews) {
@@ -233,7 +234,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         ),
       );
 
-      emit(FetchedFriendReviews(samReviews));
+      emit(FetchedFriendReviews(FriendReviews(samReviews, "Sam")));
     }
   }
 }

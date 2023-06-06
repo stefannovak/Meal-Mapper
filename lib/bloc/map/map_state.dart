@@ -71,7 +71,7 @@ class FetchedSearchResponse extends MapInitial {
 }
 
 class FetchedFriendReviews extends MapInitial {
-  final List<Review> friendReviews;
+  final FriendReviews friendReviews;
 
   FetchedFriendReviews(this.friendReviews);
 }

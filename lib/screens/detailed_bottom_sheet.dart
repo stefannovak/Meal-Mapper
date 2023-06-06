@@ -1,11 +1,10 @@
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mealmapper/bloc/firebase/firebase_bloc.dart';
 import 'package:mealmapper/bloc/map/map_bloc.dart';
+import 'package:mealmapper/models/friend_reviews.dart';
 import 'package:mealmapper/models/google/nearby_search_response.dart';
 import 'package:mealmapper/models/google/place_details_response.dart';
 import 'package:mealmapper/models/review.dart';
@@ -15,8 +14,14 @@ import 'package:url_launcher/url_launcher.dart';
 class DetailedBottomSheet extends StatefulWidget {
   final NearbySearchResponseResult area;
   Review? review;
+  String? friendName;
 
-  DetailedBottomSheet({super.key, required this.area, this.review});
+  DetailedBottomSheet({
+    super.key,
+    required this.area,
+    this.review,
+    this.friendName,
+  });
 
   @override
   State<DetailedBottomSheet> createState() => _DetailedBottomSheetState();
@@ -24,7 +29,7 @@ class DetailedBottomSheet extends StatefulWidget {
 
 class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
   PlaceDetailsResponse? _placeDetailsResponse;
-  List<Image> _reviewImages = [];
+  final List<Image> _reviewImages = [];
 
   @override
   void initState() {
@@ -53,7 +58,6 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
       ),
       child: BlocListener<FirebaseBloc, FirebaseState>(
         listener: (context, state) {
-          print(state);
           if (state is FetchedReviewImages) {
             for (var data in state.imagesMemory) {
               var image = Image.memory(
@@ -68,7 +72,6 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
         },
         child: BlocBuilder<MapBloc, MapState>(
           builder: (context, state) {
-            print(state);
             if (state is FetchedPlaceDetails) {
               _placeDetailsResponse = state.response;
               return _buildDetailedColumn(context);
@@ -108,7 +111,8 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                 ),
                 widget.review != null
                     ? Center(
-                        child: Text("My Review: ${widget.review!.summary}"))
+                        child: Text(
+                            "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review: ${widget.review!.summary}"))
                     : const Center(child: Text("Rate this place!")),
                 const SizedBox(
                   height: 8 * 4,
@@ -162,17 +166,17 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           widget.review != null
               ? Center(
                   child: Text(
-                    "My rating: ${widget.review!.rating}/5",
+                    "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} rating: ${widget.review!.rating}/5",
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w200,
                     ),
                   ),
                 )
-              : const Center(
+              : Center(
                   child: Text(
-                    "My rating: ?/5",
-                    style: TextStyle(
+                    "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} rating: ?/5",
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w200,
                     ),
@@ -182,7 +186,9 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
             height: 8 * 4,
           ),
           widget.review != null
-              ? Center(child: Text("My Review: ${widget.review!.summary}"))
+              ? Center(
+                  child: Text(
+                      "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review: ${widget.review!.summary}"))
               : Center(
                   child: GestureDetector(
                     onTap: () async {
@@ -344,13 +350,9 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
             BlocProvider.of<MapBloc>(context)
                 .add(UserSubmittedReviewLocally(review));
 
-            // setState(() {
-            //   widget.review = Review(rating, summary, widget.area, images);
-            // });
-
             Navigator.pop(context, review);
           },
-          child: Text(
+          child: const Text(
             "Submit",
             textAlign: TextAlign.end,
             style: TextStyle(
