@@ -354,7 +354,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     markers: markers,
                     onTap: (loc) async {
                       if (!_isSearchBarActive) {
-                        print("ONTAP");
                         BlocProvider.of<MapBloc>(context).add(
                           UserClickedMap(loc.latitude, loc.longitude),
                         );
@@ -364,84 +363,81 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onTap: () => _searchFocusNode.unfocus(),
-                child: AnimatedContainer(
+            GestureDetector(
+              onTap: () => _searchFocusNode.unfocus(),
+              child: AnimatedContainer(
+                padding: EdgeInsets.zero,
+                duration: const Duration(milliseconds: 100),
+                height: 80,
+                child: Container(
                   padding: EdgeInsets.zero,
-                  duration: const Duration(milliseconds: 100),
-                  height: 80,
-                  child: Container(
-                    padding: EdgeInsets.zero,
-                    color: Colors.white,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal:
-                                  MediaQuery.of(context).size.width * 0.05,
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              focusNode: _searchFocusNode,
-                              onEditingComplete: () {
-                                _searchFocusNode.unfocus();
+                  color: Colors.white,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal:
+                                MediaQuery.of(context).size.width * 0.05,
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            onEditingComplete: () {
+                              _searchFocusNode.unfocus();
 
-                                if (_searchController.text.isNotEmpty &&
-                                    _userLatitude != null &&
-                                    _userLongitude != null) {
-                                  BlocProvider.of<MapBloc>(context).add(
-                                    UserSearchedLocation(
-                                      _searchController.text,
-                                      _userLatitude!,
-                                      _userLongitude!,
-                                    ),
-                                  );
-                                }
-                              },
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.zero,
-                                hintText: 'Search',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isSearchBarActive = !_isSearchBarActive;
-                                      if (_isSearchBarActive) {
-                                        FocusScope.of(context)
-                                            .requestFocus(_searchFocusNode);
-                                      } else {
-                                        _searchFocusNode.unfocus();
-                                      }
-                                    });
-
-                                    if (_searchController.text.isNotEmpty &&
-                                        _userLatitude != null &&
-                                        _userLongitude != null) {
-                                      BlocProvider.of<MapBloc>(context).add(
-                                        UserSearchedLocation(
-                                          _searchController.text,
-                                          _userLatitude!,
-                                          _userLongitude!,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  icon: const Icon(Icons.search),
-                                ),
+                              if (_searchController.text.isNotEmpty &&
+                                  _userLatitude != null &&
+                                  _userLongitude != null) {
+                                BlocProvider.of<MapBloc>(context).add(
+                                  UserSearchedLocation(
+                                    _searchController.text,
+                                    _userLatitude!,
+                                    _userLongitude!,
+                                  ),
+                                );
+                              }
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
                               ),
-                              style: const TextStyle(fontSize: 22),
+                              hintText: 'Search for anywhere!',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isSearchBarActive = !_isSearchBarActive;
+                                    if (_isSearchBarActive) {
+                                      FocusScope.of(context)
+                                          .requestFocus(_searchFocusNode);
+                                    } else {
+                                      _searchFocusNode.unfocus();
+                                    }
+                                  });
+
+                                  if (_searchController.text.isNotEmpty &&
+                                      _userLatitude != null &&
+                                      _userLongitude != null) {
+                                    BlocProvider.of<MapBloc>(context).add(
+                                      UserSearchedLocation(
+                                        _searchController.text,
+                                        _userLatitude!,
+                                        _userLongitude!,
+                                      ),
+                                    );
+                                  }
+                                },
+                                icon: const Icon(Icons.search),
+                              ),
                             ),
+                            style: const TextStyle(fontSize: 22),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
