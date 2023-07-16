@@ -75,7 +75,7 @@ class NearbySearchResponseResult {
     placeId = json['place_id'];
     reference = json['reference'];
     scope = json['scope'];
-    types = json['types'].cast<String>();
+    // types = json['types']?.cast<String?>();
     vicinity = json['vicinity'];
     businessStatus = json['business_status'];
     openingHours = json['opening_hours'] != null

@@ -51,7 +51,8 @@ class _MyAppState extends State<MyApp> {
             create: (context) => AuthenticationBloc(auth: auth)),
       ],
       child: MaterialApp(
-        title: 'Flutter Demo',
+        title: 'Meal Mapper',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           // This is the theme of your application.
           //
@@ -63,11 +64,11 @@ class _MyAppState extends State<MyApp> {
           // Notice that the counter didn't reset back to zero; the application
           // is not restarted.
           primarySwatch: Colors.blue,
-          fontFamily: 'Georgia',
+          fontFamily: 'Poppins',
           textTheme: const TextTheme(
             displayLarge: TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
             titleLarge: TextStyle(fontSize: 24, fontStyle: FontStyle.italic),
-            bodyMedium: TextStyle(fontSize: 14, fontFamily: 'Hind'),
+            bodyMedium: TextStyle(fontSize: 14, fontFamily: 'Poppins'),
           ),
         ),
         home:

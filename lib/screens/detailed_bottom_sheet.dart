@@ -56,8 +56,8 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           topRight: Radius.circular(25.0),
         ),
       ),
-      child: BlocListener<FirebaseBloc, FirebaseState>(
-        listener: (context, state) {
+      child: BlocBuilder<FirebaseBloc, FirebaseState>(
+        builder: (context, state) {
           if (state is FetchedReviewImages) {
             for (var data in state.imagesMemory) {
               var image = Image.memory(
@@ -67,61 +67,61 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
               );
               _reviewImages.add(image);
             }
-            setState(() {});
           }
+
+          return BlocBuilder<MapBloc, MapState>(
+            builder: (context, state) {
+              if (state is FetchedPlaceDetails) {
+                _placeDetailsResponse = state.response;
+                return _buildDetailedColumn(context);
+              }
+
+              if (_placeDetailsResponse != null) {
+                return _buildDetailedColumn(context);
+              }
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Text(
+                      widget.area.name ?? "Location",
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8 * 4,
+                  ),
+                  Center(
+                    child: Text(
+                      "${widget.area.rating}/5",
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8 * 4,
+                  ),
+                  widget.review != null
+                      ? Center(
+                          child: Text(
+                              "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review: ${widget.review!.summary}"))
+                      : const Center(child: Text("Rate this place!")),
+                  const SizedBox(
+                    height: 8 * 4,
+                  ),
+                  const Center(child: CircularProgressIndicator()),
+                ],
+              );
+            },
+          );
         },
-        child: BlocBuilder<MapBloc, MapState>(
-          builder: (context, state) {
-            if (state is FetchedPlaceDetails) {
-              _placeDetailsResponse = state.response;
-              return _buildDetailedColumn(context);
-            }
-
-            if (_placeDetailsResponse != null) {
-              return _buildDetailedColumn(context);
-            }
-
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Center(
-                  child: Text(
-                    widget.area.name ?? "Location",
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 8 * 4,
-                ),
-                Center(
-                  child: Text(
-                    "${widget.area.rating}/5",
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 8 * 4,
-                ),
-                widget.review != null
-                    ? Center(
-                        child: Text(
-                            "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review: ${widget.review!.summary}"))
-                    : const Center(child: Text("Rate this place!")),
-                const SizedBox(
-                  height: 8 * 4,
-                ),
-                const Center(child: CircularProgressIndicator()),
-              ],
-            );
-          },
-        ),
       ),
     );
   }
@@ -130,142 +130,294 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
+        children: buildReviewChildren(context),
+      ),
+    );
+  }
+
+  List<Widget> buildReviewChildren(BuildContext context) {
+    return [
+      Center(
+        child: Text(
+          widget.area.name ?? "Establishment",
+          style: const TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+      const SizedBox(
+        height: 8 * 1,
+      ),
+      Center(
+        child: widget.area.rating == null
+            ? const Text(
+                "No reviews yet",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w200,
+                ),
+              )
+            : Column(
+                children: [
+                  RatingBar.builder(
+                    itemBuilder: (context, _) => const Icon(
+                      Icons.star,
+                      color: Colors.amberAccent,
+                    ),
+                    onRatingUpdate: (_) {},
+                    allowHalfRating: true,
+                    initialRating: widget.area.rating!.toDouble(),
+                  ),
+                  Text(widget.area.rating!.toString()),
+                ],
+              ),
+      ),
+      const SizedBox(
+        height: 8 * 2,
+      ),
+      _placeDetailsResponse?.result?.formattedAddress != null
+          ? Text(_placeDetailsResponse!.result!.formattedAddress!)
+          : Container(),
+      const SizedBox(
+        height: 8 * 1,
+      ),
+      _placeDetailsResponse?.result?.website != null
+          ? GestureDetector(
+              onTap: () async {
+                var uri =
+                    Uri.parse(_placeDetailsResponse?.result?.website ?? "");
+                var canLaunch = await canLaunchUrl(uri);
+                if (canLaunch) {
+                  await launchUrl(uri);
+                }
+              },
+              child: Text(
+                _placeDetailsResponse!.result!.website!,
+                style: const TextStyle(color: Colors.blueAccent),
+                softWrap: true,
+                overflow: TextOverflow.clip,
+                textAlign: TextAlign.center,
+              ),
+            )
+          : Container(),
+      const SizedBox(
+        height: 8 * 2,
+      ),
+      widget.review != null
+          ? Column(
+              children: [
+                Text(
+                  "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w200,
+                  ),
+                ),
+                RatingBar.builder(
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (_) {},
+                  allowHalfRating: true,
+                  initialRating: widget.review!.rating,
+                ),
+                Text("${widget.review!.rating}/5"),
+              ],
+            )
+          : Container(),
+      const SizedBox(
+        height: 8 * 2,
+      ),
+      widget.review != null
+          ? Center(
+              child: Column(
+                children: [
+                  Text(
+                    "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review:",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w200,
+                    ),
+                  ),
+                  Text(
+                    widget.review!.summary,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  widget.friendName?.isNotEmpty == true
+                      ? buildReviewButton(context)
+                      : Container(),
+                  _reviewImages.isNotEmpty == true
+                      ? Center(
+                          child: SizedBox(
+                            height: 200,
+                            child: ListView(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              children: _reviewImages,
+                            ),
+                          ),
+                        )
+                      : Container(),
+                ],
+              ),
+            )
+          : buildReviewButton(context),
+      const SizedBox(
+        height: 8 * 4,
+      ),
+      _placeDetailsResponse?.result?.reviews?.isNotEmpty == true
+          ? Center(
+              child: SizedBox(
+                height: 200,
+                child: ListView(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  children: _buildGoogleReviews(
+                      _placeDetailsResponse!.result!.reviews!),
+                ),
+              ),
+            )
+          : Container(),
+    ];
+  }
+
+  Center buildReviewButton(BuildContext context) {
+    return Center(
+      child: GestureDetector(
+        onTap: () async {
+          var future = showDialog(
+            context: context,
+            builder: (_) {
+              return _buildReviewDialog();
+            },
+          );
+
+          future.then((value) {
+            if (value.runtimeType == Review) {
+              BlocProvider.of<FirebaseBloc>(context).add(
+                GetReviewImages(widget.area.placeId, value),
+              );
+              setState(() {
+                widget.review = value;
+              });
+            }
+          });
+        },
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.all(
+              Radius.circular(25.0),
+            ),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(
+              vertical: 8 * 2,
+              horizontal: 8 * 8,
+            ),
             child: Text(
-              widget.area.name ?? "Location",
-              style: const TextStyle(
-                fontSize: 30,
+              "Rate this place! 📌",
+              style: TextStyle(
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(
-            height: 8 * 1,
-          ),
-          Center(
-            child: Text(
-              _placeDetailsResponse?.result?.formattedAddress ?? "address",
-            ),
-          ),
-          const SizedBox(
-            height: 8 * 2,
-          ),
-          Center(
-            child: Text(
-              "${widget.area.rating}/5",
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w200,
-              ),
-            ),
-          ),
-          const SizedBox(
-            height: 8 * 2,
-          ),
-          widget.review != null
-              ? Center(
-                  child: Text(
-                    "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} rating: ${widget.review!.rating}/5",
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w200,
-                    ),
-                  ),
-                )
-              : Center(
-                  child: Text(
-                    "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} rating: ?/5",
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w200,
-                    ),
-                  ),
-                ),
-          const SizedBox(
-            height: 8 * 4,
-          ),
-          widget.review != null
-              ? Center(
-                  child: Text(
-                      "${widget.friendName?.isNotEmpty == true ? "${widget.friendName}'s" : "My"} Review: ${widget.review!.summary}"))
-              : Center(
-                  child: GestureDetector(
-                    onTap: () async {
-                      var future = showDialog(
-                        context: context,
-                        builder: (_) {
-                          return _buildReviewDialog();
-                        },
-                      );
+        ),
+      ),
+    );
+  }
 
-                      future.then((value) {
-                        if (value.runtimeType == Review) {
-                          BlocProvider.of<FirebaseBloc>(context).add(
-                            GetReviewImages(widget.area.placeId, value),
-                          );
-                          setState(() {
-                            widget.review = value;
-                          });
-                        }
-                      });
-                    },
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(25.0),
-                        ),
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 8 * 2, horizontal: 8 * 8),
-                        child: Text(
-                          "Rate this place! 📌",
-                          style: TextStyle(
-                            fontSize: 24,
+  List<Widget> _buildGoogleReviews(List<Reviews> reviews) {
+    return reviews.map((review) {
+      String limitedText =
+          review.text ?? "It was pretty good, would recommend!";
+      if (limitedText.length > 200) {
+        limitedText = limitedText.substring(0, 200) + "...";
+      }
+
+      bool showFullText = false;
+
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          width: 300,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    review.profilePhotoUrl != null
+                        ? CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(review.profilePhotoUrl!),
+                          )
+                        : Container(),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          review.authorName ?? "Ian Smith",
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                        RatingBar.builder(
+                          itemBuilder: (context, _) => const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          onRatingUpdate: (_) {},
+                          allowHalfRating: true,
+                          initialRating: review.rating?.toDouble() ?? 3.0,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Container(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        showFullText = true;
+                      });
+                    },
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Flexible(
+                        child: Text(
+                          showFullText == true
+                              ? review.text ?? ""
+                              : limitedText,
+                          softWrap: true,
+                          overflow: TextOverflow.clip,
+                        ),
                       ),
                     ),
                   ),
                 ),
-          const SizedBox(
-            height: 8 * 4,
-          ),
-          _placeDetailsResponse != null &&
-                  _reviewImages.isEmpty &&
-                  widget.review?.images.isNotEmpty == true
-              ? const Center(child: CircularProgressIndicator())
-              : _reviewImages.isNotEmpty
-                  ? Center(
-                      child: SizedBox(
-                        height: 200,
-                        child: ListView(
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          children: _reviewImages,
-                        ),
-                      ),
-                    )
-                  : Container(),
-          GestureDetector(
-            onTap: () async {
-              var uri = Uri.parse(_placeDetailsResponse?.result?.website ?? "");
-              var canLaunch = await canLaunchUrl(uri);
-              if (canLaunch) {
-                await launchUrl(uri);
-              }
-            },
-            child: Text(
-              _placeDetailsResponse?.result?.website ?? "address",
-              style: const TextStyle(color: Colors.blueAccent),
+              ],
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }).toList();
   }
 
   AlertDialog _buildReviewDialog() {
@@ -276,67 +428,87 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
     final ImagePicker picker = ImagePicker();
 
     return AlertDialog(
-      title: const Text("My Review"),
-      content: Column(
-        children: [
-          RatingBar.builder(
-            itemBuilder: (context, _) => const Icon(
-              Icons.star,
-              color: Colors.amber,
-            ),
-            onRatingUpdate: (rate) {
-              rating = rate;
-            },
-            allowHalfRating: true,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-            child: TextField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'What did you think?',
-                hintMaxLines: 5,
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: 8 * 8,
-                  horizontal: 8 * 1,
-                ),
+      title: Text(
+        "My Review",
+        style: Theme.of(context).textTheme.titleLarge,
+        textAlign: TextAlign.center,
+      ),
+      content: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.5,
+        width: MediaQuery.of(context).size.width * 0.8,
+        child: Column(
+          children: [
+            RatingBar.builder(
+              itemBuilder: (context, _) => const Icon(
+                Icons.star,
+                color: Colors.amber,
               ),
-              onChanged: (text) {
-                setState(() {
-                  summary = text;
-                  isValid = summary.isNotEmpty;
-                });
+              onRatingUpdate: (rate) {
+                rating = rate;
               },
+              allowHalfRating: true,
             ),
-          ),
-          Row(
-            children: [
-              GestureDetector(
-                child: const Icon(Icons.camera_alt),
-                onTap: () async {
-                  var image =
-                      await picker.pickImage(source: ImageSource.camera);
-                  if (image != null) {
-                    images.add(ReviewImage(image.path, image.name));
-                  }
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'What did you think?',
+                  hintMaxLines: 5,
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 8 * 8,
+                    horizontal: 8 * 1,
+                  ),
+                ),
+                onChanged: (text) {
+                  setState(() {
+                    summary = text;
+                    isValid = summary.isNotEmpty;
+                  });
                 },
               ),
-              GestureDetector(
-                child: const Icon(Icons.photo_album),
-                onTap: () async {
-                  var image =
-                      await picker.pickImage(source: ImageSource.gallery);
-                  if (image != null) {
-                    images.add(ReviewImage(image.path, image.name));
-                  }
-                },
-              ),
-            ],
-          ),
-        ],
+            ),
+            Row(
+              children: [
+                GestureDetector(
+                  child: const Icon(Icons.camera_alt),
+                  onTap: () async {
+                    var image =
+                        await picker.pickImage(source: ImageSource.camera);
+                    if (image != null) {
+                      images.add(ReviewImage(image.path, image.name));
+                    }
+                  },
+                ),
+                GestureDetector(
+                  child: const Icon(Icons.photo_album),
+                  onTap: () async {
+                    var image =
+                        await picker.pickImage(source: ImageSource.gallery);
+                    if (image != null) {
+                      images.add(ReviewImage(image.path, image.name));
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text(
+            "Cancel",
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: Colors.red,
+            ),
+          ),
+        ),
         TextButton(
           onPressed: () {
             if (!isValid) {

@@ -260,7 +260,7 @@ class _MyHomePageState extends State<MyHomePage> {
           CameraUpdate.newCameraPosition(
             CameraPosition(
               target: LatLng(
-                review.area.geometry.location.lat - 0.005,
+                review.area.geometry.location.lat - 0.003,
                 review.area.geometry.location.lng,
               ),
               zoom: await _controller?.getZoomLevel() ?? 16,
@@ -445,119 +445,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-    );
-  }
-
-  Stack oldMap(Future<Object>? future, double latitude, double longitude) {
-    return Stack(
-      children: [
-        FutureBuilder(
-          future: future,
-          builder: (context, snapshot) {
-            return GoogleMap(
-              mapType: MapType.hybrid,
-              myLocationEnabled: true,
-              initialCameraPosition: CameraPosition(
-                target: LatLng(latitude, longitude),
-                zoom: 16,
-              ),
-              onMapCreated: (controller) {
-                _controller = controller;
-              },
-              markers: markers,
-              onTap: (loc) async {
-                if (!_isSearchBarActive) {
-                  print("ONTAP");
-                  BlocProvider.of<MapBloc>(context).add(
-                    UserClickedMap(loc.latitude, loc.longitude),
-                  );
-                }
-              },
-            );
-          },
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: GestureDetector(
-            onTap: () => _searchFocusNode.unfocus(),
-            child: AnimatedContainer(
-              padding: EdgeInsets.zero,
-              duration: const Duration(milliseconds: 100),
-              height: 80,
-              child: Container(
-                padding: EdgeInsets.zero,
-                color: Colors.white,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: MediaQuery.of(context).size.width * 0.05,
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          focusNode: _searchFocusNode,
-                          onEditingComplete: () {
-                            _searchFocusNode.unfocus();
-
-                            if (_searchController.text.isNotEmpty &&
-                                _userLatitude != null &&
-                                _userLongitude != null) {
-                              BlocProvider.of<MapBloc>(context).add(
-                                UserSearchedLocation(
-                                  _searchController.text,
-                                  _userLatitude!,
-                                  _userLongitude!,
-                                ),
-                              );
-                            }
-                          },
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.zero,
-                            hintText: 'Search',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isSearchBarActive = !_isSearchBarActive;
-                                  if (_isSearchBarActive) {
-                                    FocusScope.of(context)
-                                        .requestFocus(_searchFocusNode);
-                                  } else {
-                                    _searchFocusNode.unfocus();
-                                  }
-                                });
-
-                                if (_searchController.text.isNotEmpty &&
-                                    _userLatitude != null &&
-                                    _userLongitude != null) {
-                                  BlocProvider.of<MapBloc>(context).add(
-                                    UserSearchedLocation(
-                                      _searchController.text,
-                                      _userLatitude!,
-                                      _userLongitude!,
-                                    ),
-                                  );
-                                }
-                              },
-                              icon: const Icon(Icons.search),
-                            ),
-                          ),
-                          style: const TextStyle(fontSize: 22),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

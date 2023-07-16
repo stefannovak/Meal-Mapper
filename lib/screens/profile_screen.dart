@@ -58,10 +58,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ) {
     var reviewWidgets = <Widget>[
       const Text(
-        "My pins",
+        "My reviews",
         style: TextStyle(
           fontSize: 32,
         ),
+        textAlign: TextAlign.center,
       ),
     ];
 
@@ -82,62 +83,100 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (!(showingReviews >= reviews.length)) {
       reviewWidgets.add(
-        ElevatedButton(
-          onPressed: () {
+        GestureDetector(
+          onTap: () {
             setState(() {
               showingReviews += 5;
             });
           },
-          child: const Text("Show more..."),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text("Show more..."),
+          ),
+        ),
+      );
+
+      reviewWidgets.add(const SizedBox(
+        height: 16,
+      ));
+    } else {
+      reviewWidgets.add(
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              showingReviews = 5;
+            });
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text("Show less..."),
+          ),
         ),
       );
     }
 
     reviewWidgets.addAll(noReviewWidgets());
+
     return reviewWidgets;
   }
 
   List<Widget> noReviewWidgets() {
     return [
+      Container(
+        height: 1,
+        color: Colors.grey,
+      ),
       const Text(
-        "Friends",
+        "My friends",
         style: TextStyle(
           fontSize: 32,
         ),
+        textAlign: TextAlign.center,
       ),
       createJoeFriendTile(),
       createSamFriendTile(),
-      const SizedBox(height: 24),
-      ElevatedButton(
-        onPressed: () {
-          BlocProvider.of<AuthenticationBloc>(context).add(UserSignedOut());
-
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (context) => const AuthenticationScreen(),
-            ),
-            (Route<dynamic> route) => false,
-          );
-        },
-        child: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("Sign out", style: TextStyle(fontSize: 48)),
-        ),
+      Container(
+        height: 1,
+        color: Colors.grey,
       ),
       const SizedBox(height: 24),
-      ElevatedButton(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-            (Set<MaterialState> states) {
-              return Colors.red; // Use the component's default.
+      Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            color: Colors.blue,
+            onPressed: () {
+              BlocProvider.of<AuthenticationBloc>(context).add(UserSignedOut());
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const AuthenticationScreen(),
+                ),
+                (Route<dynamic> route) => false,
+              );
             },
           ),
-        ),
-        onPressed: () => onDeleteAccountTapped,
-        child: const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text("Delete Account", style: TextStyle(fontSize: 24)),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child:
+                Text("Sign out", style: Theme.of(context).textTheme.titleLarge),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever),
+            onPressed: () => onDeleteAccountTapped,
+            color: Colors.red,
+          ),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text("Delete Account",
+                style: Theme.of(context).textTheme.titleLarge),
+          ),
+        ],
       ),
     ];
   }
