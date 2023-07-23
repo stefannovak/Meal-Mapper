@@ -160,10 +160,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
                     target: LatLng(
-                      area.geometry.location.lat - 0.005,
+                      area.geometry.location.lat - 0.0005,
                       area.geometry.location.lng,
                     ),
-                    zoom: 16,
+                    zoom: 18,
                   ),
                 ),
               )
@@ -185,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           area.geometry.location.lat,
                           area.geometry.location.lng,
                         ),
-                        zoom: await _controller?.getZoomLevel() ?? 16,
+                        zoom: 16,
                       ),
                     ),
                   );

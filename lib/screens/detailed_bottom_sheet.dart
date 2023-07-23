@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -292,7 +294,10 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
           var future = showDialog(
             context: context,
             builder: (_) {
-              return _buildReviewDialog();
+              return MyReviewDialog(
+                area: widget.area,
+                summary: widget.review?.summary,
+              );
             },
           );
 
@@ -419,14 +424,33 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
       );
     }).toList();
   }
+}
 
-  AlertDialog _buildReviewDialog() {
-    var rating = 0.0;
-    var summary = "";
-    bool isValid = summary.isNotEmpty;
-    List<ReviewImage> images = [];
-    final ImagePicker picker = ImagePicker();
+class MyReviewDialog extends StatefulWidget {
+  String? summary;
+  NearbySearchResponseResult area;
 
+  MyReviewDialog({super.key, required this.area, this.summary});
+
+  @override
+  State<MyReviewDialog> createState() => _MyReviewDialogState();
+}
+
+class _MyReviewDialogState extends State<MyReviewDialog> {
+  var rating = 0.0;
+  var summary = "";
+  bool isValid = false;
+  final ImagePicker picker = ImagePicker();
+  List<ReviewImage> images = [];
+
+  @override
+  void initState() {
+    super.initState();
+    isValid = widget.summary?.isNotEmpty ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(
         "My Review",
@@ -434,7 +458,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
         textAlign: TextAlign.center,
       ),
       content: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.4,
         width: MediaQuery.of(context).size.width * 0.8,
         child: Column(
           children: [
@@ -457,7 +481,7 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                   hintMaxLines: 5,
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(
-                    vertical: 8 * 8,
+                    vertical: 8 * 4,
                     horizontal: 8 * 1,
                   ),
                 ),
@@ -467,32 +491,56 @@ class _DetailedBottomSheetState extends State<DetailedBottomSheet> {
                     isValid = summary.isNotEmpty;
                   });
                 },
+                maxLines: 3,
               ),
             ),
-            Row(
-              children: [
-                GestureDetector(
-                  child: const Icon(Icons.camera_alt),
-                  onTap: () async {
-                    var image =
-                        await picker.pickImage(source: ImageSource.camera);
-                    if (image != null) {
-                      images.add(ReviewImage(image.path, image.name));
-                    }
-                  },
-                ),
-                GestureDetector(
-                  child: const Icon(Icons.photo_album),
-                  onTap: () async {
-                    var image =
-                        await picker.pickImage(source: ImageSource.gallery);
-                    if (image != null) {
-                      images.add(ReviewImage(image.path, image.name));
-                    }
-                  },
-                ),
-              ],
+            GestureDetector(
+              child: const Row(
+                children: [
+                  Icon(Icons.camera_alt),
+                  Text("Take a photo"),
+                ],
+              ),
+              onTap: () async {
+                var image = await picker.pickImage(source: ImageSource.camera);
+                if (image != null) {
+                  images.add(ReviewImage(image.path, image.name));
+                }
+              },
             ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              child: const Row(
+                children: [
+                  Icon(Icons.photo_album),
+                  Text("Upload a photo"),
+                ],
+              ),
+              onTap: () async {
+                var image = await picker.pickImage(source: ImageSource.gallery);
+
+                if (image != null) {
+                  setState(() {
+                    images.add(ReviewImage(image.path, image.name));
+                  });
+                }
+              },
+            ),
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                itemCount: images.length,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (BuildContext context, int index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Image.file(
+                      File(images[index].path),
+                    ),
+                  );
+                },
+              ),
+            )
           ],
         ),
       ),
